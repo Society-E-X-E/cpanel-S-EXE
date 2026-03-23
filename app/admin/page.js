@@ -1,47 +1,52 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import Footer from "../appPages/components/Footer";
-import Head from "next/head";
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Verificación de sesión inicial optimizada
   useEffect(() => {
-    async function checkSession() {
-      const response = await fetch("/api/admin/me");
-      if (response.ok) {
-        router.push("/dashboard");
-      }
-    }
-    checkSession();
+    let isMounted = true;
+    fetch("/api/admin/me")
+      .then(res => {
+        if (res.ok && isMounted) router.push("/dashboard");
+      });
+    return () => { isMounted = false; };
   }, [router]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    const response = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-      credentials: "include",
-    });
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        credentials: "include",
+      });
 
-    const data = await response.json();
-    if (response.ok && data.status === "ok") {
-      router.push("/dashboard");
-      return;
+      const data = await response.json();
+      if (response.ok && data.status === "ok") {
+        router.push("/dashboard");
+      } else {
+        setError(data?.message || "Error de autenticación.");
+      }
+    } catch (err) {
+      setError("Error de conexión con el servidor.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setError(data?.message || "Credenciales inválidas. Solo administradores autorizados.");
   };
 
-  return(
+  return (
     <>
       <Head>
         <title> Login Dashboard | Society . E X E</title>
@@ -104,9 +109,9 @@ export default function AdminLoginPage() {
             <label htmlFor="admin-password" className="bc-label">Contraseña</label>
           </div>
 
-          <button type="submit" className="bc-button bc-button-primary" style={{ width: "100%" }}>
-            Access
-          </button>
+          <button type="submit" className="bc-button bc-button-primary" disabled={isLoading}>
+      {isLoading ? "Verificando..." : "Access"}
+    </button>
           {error && <p className="bc-text-danger" style={{ margin: 0 }}>{error}</p>}
         </form>
 

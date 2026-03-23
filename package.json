@@ -1,6 +1,6 @@
 {
-  "name": "bancolombia-svp-next",
-  "version": "0.1.0",
+  "name": "cpanel-dashboard-society-exe",
+  "version": "3.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",

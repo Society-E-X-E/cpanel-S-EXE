@@ -8,7 +8,7 @@ export default function Banner() {
           className="bc-inline-alert-large"
         >
           <article
-            tabindex="0"
+            tabIndex="0"
             role="alertdialog"
             id="n.46097355"
             aria-label="¡Prográmate! Consulta el estado de nuestros canales y los mantenimientos programados."
