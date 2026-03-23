@@ -1,0 +1,15 @@
+#focusGuideTop {
+  background: rgba(44, 42, 41, 0.8);
+  width: 100%;
+  position: absolute;
+  top: 0;
+  z-index: 1500;
+}
+
+#focusGuideBottom {
+  background: rgba(44, 42, 41, 0.8);
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  z-index: 1500;
+}

