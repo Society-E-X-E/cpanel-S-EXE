@@ -7,7 +7,7 @@ export default function CodePage({ searchParams }) {
 
   return (
     <main className="svp-main">
-      <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/asset/images/trazo.svg)" }}>
+      <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}>
         <Logo />
         <h1 className="bc-text-center bc-cibsans-font-style-9-extralight bc-mt-4 bc-fs-xs">
           Verificación de código 2FA

@@ -72,7 +72,7 @@ export default function LoadingPage({ searchParams }) {
 
   return (
     <main className="svp-main">
-      <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/asset/images/trazo.svg)" }}>
+      <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}>
         <section className="bc-card bc-card-auth bc-card-container" style={{ minWidth: "320px", margin: "3rem auto" }}>
           <section className="bc-card-auth-body">
             <section className="bc-card-auth-head" style={{ textAlign: "center" }}>

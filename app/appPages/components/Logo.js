@@ -3,7 +3,7 @@ export default function Logo() {
     <div className="bc-flex bc-justify-content-center">
       <div className="bc-flex bc-justify-content-center bc-mt-5" style={{ width: '11.5rem' }}>
         <img
-          src="/asset/images/bancolombia-horizontal-no-spacing.svg"
+          src="/assets/images/bancolombia-horizontal-no-spacing.svg"
           alt="Bancolombia logo"
           width={184}
           height={40}

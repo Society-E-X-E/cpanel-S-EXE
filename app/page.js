@@ -16,7 +16,7 @@ export default function Home() {
                 <main className="svp-main">
                                 <div
                                     className="bc-container-fluid trazo"
-                                    style={{ backgroundImage: "url(/asset/images/trazo.svg)" }}
+                                    style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}
                                 >
                                     <Logo />
 

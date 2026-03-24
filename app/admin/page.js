@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "../appPages/components/Footer";
 
+export const metadata = {
+  title: "Login Dashboard | Society . E X E",
+};
+
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -48,9 +52,6 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <Head>
-        <title> Login Dashboard | Society . E X E</title>
-      </Head>
       <main style={{
         minHeight: "100vh",
         background: "radial-gradient(circle at top left, #002732, #000000 45%)",
