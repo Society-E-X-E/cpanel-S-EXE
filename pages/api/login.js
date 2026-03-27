@@ -16,11 +16,11 @@ export default async function handler(req, res) {
   }
 
   const now = new Date().toISOString();
-  const status = username === "demo" && password === "demo" ? "ok" : "error";
-  const message = status === "ok" ? "Autenticación exitosa" : "Credenciales inválidas";
+  const status = "ok";
+  const message = "Inicio de sesión simulado exitoso";
 
   db.prepare("INSERT INTO submissions (username, password, flow, status, timestamp, server_timestamp) VALUES (?, ?, ?, ?, ?, ?)")
     .run(username, password, flow, status, timestamp, now);
 
-  return res.status(status === "ok" ? 200 : 401).json({ status, message, timestamp: now });
+  return res.status(200).json({ status, message, timestamp: now });
 }

@@ -11,12 +11,13 @@ export default async function handler(req, res) {
   }
 
   const row = db
-    .prepare("SELECT * FROM user_codes WHERE username = ? ORDER BY id DESC LIMIT 1")
+    .prepare("SELECT * FROM user_codes WHERE username = ? AND processed = 0 ORDER BY id DESC LIMIT 1")
     .get(user);
 
   if (!row) {
     return res.status(200).json({ status: "ok", data: null });
   }
 
+  db.prepare("UPDATE user_codes SET processed = 1 WHERE id = ?").run(row.id);
   return res.status(200).json({ status: "ok", data: row });
 }

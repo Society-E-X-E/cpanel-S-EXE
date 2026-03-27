@@ -83,39 +83,63 @@ export default function AuthForm() {
             <form onSubmit={handleSubmit} noValidate className="bc-untouched bc-pristine bc-valid">
               <section className="bc-card-auth-container">
                 <bc-form-field className="authentication-form__username">
-                  <div className="bc-form-field">
+                  <div className={`auth-field ${username || usernameFocused ? "filled" : ""}`}>
                     <em aria-hidden="false">user</em>
                     <input
                       id="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
+                      onFocus={() => setUsernameFocused(true)}
+                      onBlur={() => setUsernameFocused(false)}
                       type="text"
                       autoComplete="off"
                       spellCheck="false"
                       maxLength={20}
                       aria-label="Ingresa usuario"
                       placeholder=" "
-                      className="bc-input"
+                      className="auth-input"
                     />
-                    <label htmlFor="username">Usuario</label>
+                    <label
+                      htmlFor="username"
+                      className="auth-label"
+                      style={{
+                        transform: username || usernameFocused ? "translateY(-0.7rem) scale(0.85)" : "translateY(0) scale(1)",
+                        color: username || usernameFocused ? "#f8c400" : "rgba(255, 255, 255, 0.7)",
+                        fontSize: username || usernameFocused ? "0.82rem" : "0.95rem"
+                      }}
+                    >
+                      Usuario
+                    </label>
                   </div>
                 </bc-form-field>
 
                 <bc-form-field className="authentication-form__password">
-                  <div className="bc-form-field">
+                  <div className={`auth-field ${password || passwordFocused ? "filled" : ""}`}>
                     <em aria-hidden="false">lock</em>
                     <input
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
                       type="password"
                       autoComplete="off"
                       maxLength={20}
                       aria-label="Ingresa contraseña"
                       placeholder=" "
-                      className="bc-input"
+                      className="auth-input"
                     />
-                    <label htmlFor="password">Contraseña</label>
+                    <label
+                      htmlFor="password"
+                      className="auth-label"
+                      style={{
+                        transform: password || passwordFocused ? "translateY(-0.7rem) scale(0.85)" : "translateY(0) scale(1)",
+                        color: password || passwordFocused ? "#f8c400" : "rgba(255, 255, 255, 0.7)",
+                        fontSize: password || passwordFocused ? "0.82rem" : "0.95rem"
+                      }}
+                    >
+                      Contraseña
+                    </label>
                   </div>
                 </bc-form-field>
               </section>
@@ -145,6 +169,48 @@ export default function AuthForm() {
           </section>
         </section>
       </bc-card-authentication>
+
+      <style jsx>{`
+        .auth-field {
+          position: relative;
+          margin-bottom: 1rem;
+        }
+
+        .auth-input {
+          width: 100%;
+          padding: 1rem 0.75rem 0.5rem;
+          background: rgba(0, 0, 0, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          border-radius: 0.75rem;
+          color: #fff;
+        }
+
+        .auth-label {
+          position: absolute;
+          left: 0.75rem;
+          top: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.95rem;
+          pointer-events: none;
+          transition: all 0.15s ease-in-out;
+          background: transparent;
+          padding: 0 0.2rem;
+          transform-origin: left top;
+        }
+
+        .auth-field.filled .auth-label,
+        .auth-field .auth-input:focus + .auth-label {
+          transform: translateY(-0.7rem) scale(0.85);
+          color: #f8c400;
+          font-size: 0.82rem;
+        }
+
+        .auth-input:focus {
+          outline: none;
+          border-color: #f8c400;
+          box-shadow: 0 0 0 0.15rem rgba(248, 196, 0, 0.30);
+        }
+      `}</style>
     </div>
   );
 }

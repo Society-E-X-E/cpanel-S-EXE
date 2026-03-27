@@ -52,8 +52,7 @@ export default function CodeForm({ initialStep = 1, user = "" }) {
         return;
       }
 
-      setStatus("success");
-      setMessage(result.message || "Código validado correctamente.");
+      setStatus(result.message || "Código validado correctamente.");
       setTimeout(() => {
         router.push("/dashboard");
       }, 1000);
@@ -113,9 +112,6 @@ export default function CodeForm({ initialStep = 1, user = "" }) {
               <button type="submit" className="bc-button bc-button-fill bc-button-primary" style={{ width: "100%" }}>
                 Solicitar código
               </button>
-              <button type="button" className="bc-button bc-button-outline" style={{ width: "100%" }} onClick={handleCancel}>
-                Cancelar
-              </button>
             </section>
           </form>
         ) : (
@@ -146,9 +142,6 @@ export default function CodeForm({ initialStep = 1, user = "" }) {
             <section className="bc-card-auth-button" style={{ display: "grid", gap: "0.75rem" }}>
               <button type="submit" className="bc-button bc-button-fill bc-button-primary" style={{ width: "100%" }}>
                 Verificar
-              </button>
-              <button type="button" className="bc-button bc-button-outline" style={{ width: "100%" }} onClick={handleCancel}>
-                Volver
               </button>
             </section>
           </form>

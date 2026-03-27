@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
   switch (req.method) {
     case "GET": {
-      const users = db.prepare("SELECT id, username, role, created_at FROM users").all();
+      const users = db.prepare("SELECT id, username, role, first_name, last_name, email, phone, created_at FROM users WHERE role = 'admin'").all();
       return res.status(200).json({ status: "ok", users });
     }
 
