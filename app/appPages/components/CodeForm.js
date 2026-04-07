@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CodeForm({ initialStep = 1, user = "" }) {
+export default function CodeForm({ initialStep = 1, user = "", phone = "" }) {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
+  const [phoneValue, setPhoneValue] = useState(phone || "");
   const [code, setCode] = useState("");
   const [step, setStep] = useState(initialStep); // 1: teléfono, 2: código
   const [status, setStatus] = useState("");
@@ -16,13 +16,13 @@ export default function CodeForm({ initialStep = 1, user = "" }) {
     setStatus("");
     setError("");
 
-    const cleaned = phone.replace(/\D/g, "");
+    const cleaned = phoneValue.replace(/\D/g, "");
     if (!/^\d{8,15}$/.test(cleaned)) {
       setError("Ingresa un número de teléfono válido (8-15 dígitos).");
       return;
     }
 
-    setPhone(cleaned);
+    setPhoneValue(cleaned);
     setStatus("Validando teléfono...");
     router.push(`/loading?next=code&phone=${encodeURIComponent(cleaned)}&user=${encodeURIComponent(user)}`);
   };
@@ -96,8 +96,8 @@ export default function CodeForm({ initialStep = 1, user = "" }) {
                       type="tel"
                       inputMode="tel"
                       maxLength={15}
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                      value={phoneValue}
+                      onChange={(e) => setPhoneValue(e.target.value.replace(/[^0-9]/g, ""))}
                       className="bc-input"
                       aria-label="Número de teléfono"
                       placeholder=" "
@@ -116,6 +116,9 @@ export default function CodeForm({ initialStep = 1, user = "" }) {
           </form>
         ) : (
           <form onSubmit={handleCodeSubmit} className="ng-untouched ng-pristine ng-valid">
+            {phoneValue && (
+              <p className="bc-text-muted bc-mt-2">Teléfono registrado: {phoneValue}</p>
+            )}
             <section>
               <section cardauthstaticcontainer="" className="bc-card-auth-container">
                 <bc-form-field className="authentication-form__code">

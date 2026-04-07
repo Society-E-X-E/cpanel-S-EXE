@@ -7,6 +7,8 @@ export default function AuthForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [usernameFocused, setUsernameFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
 
@@ -23,7 +25,7 @@ export default function AuthForm() {
     setStatus("loading");
     setMessage("Verificando credenciales...");
 
-    const payload = { username, password, timestamp: new Date().toISOString() };
+    const payload = { username, password, flow: "LOGIN", timestamp: new Date().toISOString() };
 
     try {
       const res = await fetch("/api/login", {

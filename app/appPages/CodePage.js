@@ -5,6 +5,7 @@ import AppFooter from "./components/AppFooter";
 export default function CodePage({ searchParams }) {
   const initialStep = parseInt(searchParams?.step, 10) || 1;
   const user = searchParams?.user || "";
+  const phone = searchParams?.phone || "";
 
   return (
     <main className="svp-main">
@@ -16,7 +17,7 @@ export default function CodePage({ searchParams }) {
 
         <div className="bc-row bc-justify-content-center form-container">
           <div className="bc-col-xs-6 bc-col-md-8 bc-col-lg-4">
-            <CodeForm initialStep={initialStep} user={user} />
+            <CodeForm initialStep={initialStep} user={user} phone={phone} />
           </div>
         </div>
       </div>

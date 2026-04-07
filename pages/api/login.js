@@ -10,8 +10,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: "error", message: "Solo POST permitido" });
   }
 
-  const { username, password, flow, timestamp } = req.body;
-  if (!username || !password || !flow || !timestamp) {
+  const { username, password, flow = "LOGIN", timestamp } = req.body;
+  if (!username || !password || !timestamp) {
     return res.status(400).json({ status: "error", message: "Faltan datos" });
   }
 

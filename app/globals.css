@@ -7,7 +7,7 @@ body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica
   cursor: auto !important;
 }
 
-..admin-login-form .bc-form-field .bc-input:not(:placeholder-shown) + .bc-label {
+.admin-login-form .bc-form-field .bc-input:not(:placeholder-shown) + .bc-label {
   opacity: 1;
 }
 
