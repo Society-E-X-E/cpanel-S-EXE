@@ -203,10 +203,15 @@ export default function ProtectedDashboard() {
   const activityPaginated = userActivity.slice((activityPage - 1) * itemsPerPage, activityPage * itemsPerPage);
 
   const loadLocal = () => {
-    const local = JSON.parse(localStorage.getItem("svpSubmissions") || "[]");
-    setSubmissions(local);
-    setMessage("Datos cargados del localStorage.");
-    logAdminAction("load_local", `Cargó ${local.length} registros desde localStorage`);
+    try {
+      const local = JSON.parse(localStorage.getItem("svpSubmissions") || "[]");
+      setSubmissions(local);
+      setMessage("Datos cargados del localStorage.");
+      logAdminAction("load_local", `Cargó ${local.length} registros desde localStorage`);
+    } catch (error) {
+      console.error("[dashboard] Failed to parse local submissions:", error);
+      setMessage("Error al leer datos locales. Los datos pueden estar corruptos.");
+    }
   };
 
   const requestUserInfo = async (username, action = "otp-p") => {
@@ -335,12 +340,16 @@ export default function ProtectedDashboard() {
               <button
                 className="bc-button bc-button-danger dashboard-btn-danger"
                 onClick={async () => {
-                  const resp = await fetch('/api/admin/logout', {
-                    method: 'POST',
-                    credentials: 'include',
-                  });
-                  if (resp.ok) {
-                    logAdminAction('logout', 'Cierre de sesión admin');
+                  try {
+                    const resp = await fetch('/api/admin/logout', {
+                      method: 'POST',
+                      credentials: 'include',
+                    });
+                    if (resp.ok) {
+                      logAdminAction('logout', 'Cierre de sesión admin');
+                    }
+                  } catch (error) {
+                    console.error('[dashboard] Logout error:', error);
                   }
                   router.push('/admin');
                 }}

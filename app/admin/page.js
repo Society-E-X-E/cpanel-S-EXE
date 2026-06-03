@@ -16,6 +16,9 @@ export default function AdminLoginPage() {
     fetch("/api/admin/me")
       .then(res => {
         if (res.ok && isMounted) router.push("/dashboard");
+      })
+      .catch(err => {
+        console.error("[admin] Session check failed:", err);
       });
     return () => { isMounted = false; };
   }, [router]);

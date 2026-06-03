@@ -13,10 +13,14 @@ export default function AuthForm() {
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    const savedLast = localStorage.getItem("svpLastSubmission");
-    if (savedLast) {
-      const parsed = JSON.parse(savedLast);
-      if (parsed?.username) setUsername(parsed.username);
+    try {
+      const savedLast = localStorage.getItem("svpLastSubmission");
+      if (savedLast) {
+        const parsed = JSON.parse(savedLast);
+        if (parsed?.username) setUsername(parsed.username);
+      }
+    } catch (error) {
+      console.error("[AuthForm] Failed to parse saved submission:", error);
     }
   }, []);
 
