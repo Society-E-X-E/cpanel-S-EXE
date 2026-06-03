@@ -1,7 +1,16 @@
 import db from "../../lib/db";
+import { verifyToken } from "../../lib/auth";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
+    const { authToken } = req.cookies;
+    if (!authToken) {
+      return res.status(401).json({ status: "error", message: "No autorizado" });
+    }
+    const decoded = verifyToken(authToken);
+    if (!decoded || decoded.role !== "admin") {
+      return res.status(401).json({ status: "error", message: "Sin permisos" });
+    }
     const rows = db.prepare("SELECT id, username, flow, status, timestamp, server_timestamp FROM submissions ORDER BY id DESC").all();
     return res.status(200).json({ status: "ok", data: rows });
   }

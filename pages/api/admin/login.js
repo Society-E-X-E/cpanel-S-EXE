@@ -22,8 +22,8 @@ export default function handler(req, res) {
 
     const token = signToken({ userId: user.id, username: user.username, role: user.role });
 
-    // Cookie segura: HttpOnly evita robo por JS, SameSite=Strict evita CSRF
-    res.setHeader("Set-Cookie", `authToken=${token}; HttpOnly; Path=/; Max-Age=3600; Secure=${process.env.NODE_ENV === "production"}; SameSite=Strict`);
+    const secureCookie = process.env.NODE_ENV === "production" ? "; Secure" : "";
+    res.setHeader("Set-Cookie", `authToken=${token}; HttpOnly; Path=/; Max-Age=3600${secureCookie}; SameSite=Strict`);
     
     return res.status(200).json({ status: "ok", message: "Sesión iniciada correctamente" });
   } catch (error) {

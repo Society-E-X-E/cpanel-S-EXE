@@ -2,18 +2,19 @@ node_modules/
 .next/
 out/
 build/
-.env*
+.env
+.env.*
+!.env.example
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# SQLite temporales
+# SQLite databases and temporaries
+data/*.db
 *.db-wal
 *.db-shm
 data/*.db-wal
 data/*.db-shm
 
-# Logs y entorno
-.env
-.env.local
+# OS files
 .DS_Store

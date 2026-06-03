@@ -1,4 +1,5 @@
 import { subscribe } from "../../../lib/notifications";
+import { verifyToken } from "../../../lib/auth";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {
@@ -6,11 +7,19 @@ export default function handler(req, res) {
     return;
   }
 
+  const { authToken } = req.cookies;
+  if (!authToken) {
+    return res.status(401).json({ status: "error", message: "No autorizado" });
+  }
+  const decoded = verifyToken(authToken);
+  if (!decoded || decoded.role !== "admin") {
+    return res.status(401).json({ status: "error", message: "Sin permisos" });
+  }
+
   res.writeHead(200, {
     Connection: "keep-alive",
     "Cache-Control": "no-cache, no-transform",
     "Content-Type": "text/event-stream",
-    "Access-Control-Allow-Origin": "*",
   });
 
   res.write("retry: 5000\n\n");
