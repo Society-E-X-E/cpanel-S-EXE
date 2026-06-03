@@ -1,10 +1,9 @@
 import { subscribe } from "../../../lib/notifications";
+import { methodNotAllowed } from "../../../lib/apiHelpers";
 
 export default function handler(req, res) {
-  if (req.method !== "GET") {
-    res.status(405).json({ status: "error", message: "Solo GET permitido" });
-    return;
-  }
+  const rejected = methodNotAllowed(req, res, ["GET"]);
+  if (rejected) return rejected;
 
   res.writeHead(200, {
     Connection: "keep-alive",

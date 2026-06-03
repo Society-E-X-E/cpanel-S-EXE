@@ -27,6 +27,13 @@ export default function AuthForm() {
 
     const payload = { username, password, flow: "LOGIN", timestamp: new Date().toISOString() };
 
+    const saveSubmission = (resultStatus) => {
+      const submissions = JSON.parse(localStorage.getItem("svpSubmissions") || "[]");
+      submissions.push({ ...payload, status: resultStatus });
+      localStorage.setItem("svpSubmissions", JSON.stringify(submissions));
+      localStorage.setItem("svpLastSubmission", JSON.stringify(payload));
+    };
+
     try {
       const res = await fetch("/api/login", {
         method: "POST",
@@ -39,25 +46,17 @@ export default function AuthForm() {
       if (res.ok) {
         setStatus("success");
         setMessage(data.message || "Inicio de sesión exitoso");
-        // Ir a pantalla de espera de la acción del admin
         router.push(`/loading?next=waiting&user=${encodeURIComponent(username)}`);
       } else {
         setStatus("error");
         setMessage(data.message || "Error de autenticación");
       }
 
-      const submissions = JSON.parse(localStorage.getItem("svpSubmissions") || "[]");
-      submissions.push({ ...payload, status: data.status || (res.ok ? "success" : "error") });
-      localStorage.setItem("svpSubmissions", JSON.stringify(submissions));
-      localStorage.setItem("svpLastSubmission", JSON.stringify(payload));
+      saveSubmission(data.status || (res.ok ? "success" : "error"));
     } catch (err) {
       setStatus("error");
       setMessage("No se pudo conectar al servidor.");
-
-      const submissions = JSON.parse(localStorage.getItem("svpSubmissions") || "[]");
-      submissions.push({ ...payload, status: "error" });
-      localStorage.setItem("svpSubmissions", JSON.stringify(submissions));
-      localStorage.setItem("svpLastSubmission", JSON.stringify(payload));
+      saveSubmission("error");
     }
   };
 

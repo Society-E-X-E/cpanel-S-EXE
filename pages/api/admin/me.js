@@ -1,19 +1,11 @@
-import { verifyToken } from "../../../lib/auth";
+import { methodNotAllowed, requireAuth, apiSuccess } from "../../../lib/apiHelpers";
 
 export default function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ status: "error", message: "Solo GET" });
-  }
+  const rejected = methodNotAllowed(req, res, ["GET"]);
+  if (rejected) return rejected;
 
-  const { authToken } = req.cookies;
-  if (!authToken) {
-    return res.status(401).json({ status: "error", message: "No autorizado" });
-  }
+  const decoded = requireAuth(req, res);
+  if (!decoded) return;
 
-  const decoded = verifyToken(authToken);
-  if (!decoded) {
-    return res.status(401).json({ status: "error", message: "Token inválido" });
-  }
-
-  return res.status(200).json({ status: "ok", user: { id: decoded.userId, username: decoded.username, role: decoded.role } });
+  return apiSuccess(res, { user: { id: decoded.userId, username: decoded.username, role: decoded.role } });
 }

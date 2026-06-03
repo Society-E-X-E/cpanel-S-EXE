@@ -1,21 +1,18 @@
 import db from "../../../lib/db";
-import { verifyToken } from "../../../lib/auth";
+import { requireAuth, methodNotAllowed, apiError, apiSuccess } from "../../../lib/apiHelpers";
 
 export default function handler(req, res) {
-  const { authToken } = req.cookies;
-  if (!authToken || !verifyToken(authToken)) {
-    return res.status(401).json({ message: "No autorizado" });
-  }
+  const decoded = requireAuth(req, res);
+  if (!decoded) return;
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Solo POST permitido" });
-  }
+  const rejected = methodNotAllowed(req, res, ["POST"]);
+  if (rejected) return rejected;
 
   try {
     db.prepare("DELETE FROM submissions").run();
-    return res.status(200).json({ status: "ok", message: "Base de datos limpiada" });
+    return apiSuccess(res, { message: "Base de datos limpiada" });
   } catch (error) {
     console.error("Error clearing submissions:", error);
-    return res.status(500).json({ status: "error", message: "Error al limpiar la base de datos" });
+    return apiError(res, 500, "Error al limpiar la base de datos");
   }
 }

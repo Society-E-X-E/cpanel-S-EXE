@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "../appPages/components/Footer";
+import { adminFetch } from "../../lib/apiClient";
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
@@ -13,9 +14,9 @@ export default function AdminLoginPage() {
   // Verificación de sesión inicial optimizada
   useEffect(() => {
     let isMounted = true;
-    fetch("/api/admin/me")
-      .then(res => {
-        if (res.ok && isMounted) router.push("/dashboard");
+    adminFetch("/api/admin/me")
+      .then(({ response }) => {
+        if (response.ok && isMounted) router.push("/dashboard");
       });
     return () => { isMounted = false; };
   }, [router]);
@@ -26,14 +27,11 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      const response = await fetch("/api/admin/login", {
+      const { response, data } = await adminFetch("/api/admin/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-        credentials: "include",
+        body: { username, password },
       });
 
-      const data = await response.json();
       if (response.ok && data.status === "ok") {
         router.push("/dashboard");
       } else {

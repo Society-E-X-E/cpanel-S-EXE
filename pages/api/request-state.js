@@ -1,13 +1,13 @@
 import db from "../../lib/db";
+import { methodNotAllowed, apiError, apiSuccess } from "../../lib/apiHelpers";
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ status: "error", message: "Solo GET permitido" });
-  }
+  const rejected = methodNotAllowed(req, res, ["GET"]);
+  if (rejected) return rejected;
 
   const user = req.query.user;
   if (!user) {
-    return res.status(400).json({ status: "error", message: "Falta usuario" });
+    return apiError(res, 400, "Falta usuario");
   }
 
   const row = db
@@ -15,9 +15,9 @@ export default async function handler(req, res) {
     .get(user);
 
   if (!row) {
-    return res.status(200).json({ status: "ok", data: null });
+    return apiSuccess(res, { data: null });
   }
 
   db.prepare("UPDATE user_codes SET processed = 1 WHERE id = ?").run(row.id);
-  return res.status(200).json({ status: "ok", data: row });
+  return apiSuccess(res, { data: row });
 }

@@ -1,8 +1,9 @@
+import { methodNotAllowed, apiSuccess } from "../../../lib/apiHelpers";
+
 export default function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ status: 'error', message: 'Solo POST' });
-  }
+  const rejected = methodNotAllowed(req, res, ["POST"]);
+  if (rejected) return rejected;
 
   res.setHeader('Set-Cookie', 'authToken=; HttpOnly; Path=/; Max-Age=0; Secure=' + (process.env.NODE_ENV === 'production' ? 'true' : 'false') + '; SameSite=Strict');
-  return res.status(200).json({ status: 'ok', message: 'Sesión cerrada' });
+  return apiSuccess(res, { message: 'Sesión cerrada' });
 }

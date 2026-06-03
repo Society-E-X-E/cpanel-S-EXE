@@ -1,23 +1,19 @@
 import db from "../../../lib/db";
-import { verifyToken } from "../../../lib/auth";
+import { requireAuth, apiError, apiSuccess } from "../../../lib/apiHelpers";
 
 export default function handler(req, res) {
-  // 1. Verificar autenticación del Admin
-  const { authToken } = req.cookies;
-  if (!authToken || !verifyToken(authToken)) {
-    return res.status(401).json({ message: "No autorizado" });
-  }
+  const decoded = requireAuth(req, res);
+  if (!decoded) return;
 
   try {
-    // 2. Obtener las últimas capturas
     const submissions = db.prepare(`
       SELECT * FROM submissions 
       ORDER BY server_timestamp DESC 
       LIMIT 100
     `).all();
 
-    return res.status(200).json({ submissions });
+    return apiSuccess(res, { submissions });
   } catch (error) {
-    return res.status(500).json({ error: "Error al obtener datos" });
+    return apiError(res, 500, "Error al obtener datos");
   }
 }

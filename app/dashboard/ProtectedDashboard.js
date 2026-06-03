@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "../appPages/components/Footer";
 import Head from "next/head";
+import { adminFetch, isUnauthorized } from "../../lib/apiClient";
 
 export default function ProtectedDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -16,16 +17,15 @@ export default function ProtectedDashboard() {
     setIsLoading(true);
     setMessage("Cargando datos del servidor...");
     try {
-      const resp = await fetch("/api/admin/submissions", { credentials: "include" });
-      if (resp.ok) {
-        const data = await resp.json();
+      const { response, data } = await adminFetch("/api/admin/submissions");
+      if (response.ok) {
         setSubmissions(data.submissions || []);
         setMessage("Datos cargados del servidor.");
         logAdminAction("load_server", `Cargó ${data.submissions?.length || 0} envíos`);
         return;
       }
 
-      if (resp.status === 401) {
+      if (isUnauthorized(response)) {
         router.push("/admin");
         return;
       }
@@ -42,7 +42,7 @@ export default function ProtectedDashboard() {
   useEffect(() => {
     async function checkLogin() {
       try {
-        const resp = await fetch("/api/admin/me", { credentials: "include" });
+        const { response: resp } = await adminFetch("/api/admin/me");
         if (resp.ok) {
           setAuthorized(true);
           await Promise.all([loadServer(), fetchAdminProfiles(), fetchActionLogs()]);
@@ -125,12 +125,11 @@ export default function ProtectedDashboard() {
 
   const fetchAdminProfiles = useCallback(async () => {
     try {
-      const resp = await fetch("/api/admin/users", { credentials: "include" });
-      if (!resp.ok) {
-        if (resp.status === 401) router.push("/admin");
+      const { response, data } = await adminFetch("/api/admin/users");
+      if (!response.ok) {
+        if (isUnauthorized(response)) router.push("/admin");
         return;
       }
-      const data = await resp.json();
       setAdminProfiles(data.users || []);
     } catch (err) {
       console.error("Error fetching admin profiles:", err);
@@ -139,12 +138,11 @@ export default function ProtectedDashboard() {
 
   const fetchActionLogs = useCallback(async () => {
     try {
-      const resp = await fetch("/api/admin/action-logs", { credentials: "include" });
-      if (!resp.ok) {
-        if (resp.status === 401) router.push("/admin");
+      const { response, data } = await adminFetch("/api/admin/action-logs");
+      if (!response.ok) {
+        if (isUnauthorized(response)) router.push("/admin");
         return;
       }
-      const data = await resp.json();
       setActionLogs(data.logs || []);
     } catch (err) {
       console.error("Error fetching action logs:", err);
@@ -153,11 +151,9 @@ export default function ProtectedDashboard() {
 
   const logAdminAction = async (action, details = "") => {
     try {
-      await fetch("/api/admin/action-logs", {
+      await adminFetch("/api/admin/action-logs", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, details }),
+        body: { action, details },
       });
     } catch (err) {
       console.error("Error logging action:", err);
@@ -172,17 +168,14 @@ export default function ProtectedDashboard() {
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/send-code", {
+      const { response, data } = await adminFetch("/api/send-code", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: username, action: actionType, flow }),
+        body: { user: username, action: actionType, flow },
       });
-      const body = await response.json();
 
       if (!response.ok) {
-        setMessage(`Error al solicitar ${actionType} para ${username}: ${body.message || "Sin detalles"}`);
-        logAdminAction("request_failed", `Usuario ${username} acción ${actionType} => ${body.message || "error"}`);
+        setMessage(`Error al solicitar ${actionType} para ${username}: ${data.message || "Sin detalles"}`);
+        logAdminAction("request_failed", `Usuario ${username} acción ${actionType} => ${data.message || "error"}`);
       } else {
         const label = actionType === "otp-p" ? "solicitud de teléfono" : "solicitud de código";
         setMessage(`Se envió ${label} a ${username}.`);
@@ -219,17 +212,15 @@ export default function ProtectedDashboard() {
     localStorage.setItem("svpFlow", flow);
 
     try {
-      const resp = await fetch("/api/send-code", {
+      const { response, data } = await adminFetch("/api/send-code", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: username, action, flow }),
+        body: { user: username, action, flow },
       });
-      if (resp.status === 401) {
+      if (isUnauthorized(response)) {
         router.push("/admin");
         return;
       }
-      const data = await resp.json();
-      if (!resp.ok) {
+      if (!response.ok) {
         setMessage(`Error solicitando datos: ${data.message || "desconocido"}`);
         return;
       }
@@ -308,16 +299,12 @@ export default function ProtectedDashboard() {
                 onClick={async () => {
                   setIsLoading(true);
                   try {
-                    const resp = await fetch("/api/admin/clear-submissions", {
-                      method: "POST",
-                      credentials: "include",
-                    });
-                    const data = await resp.json();
-                    if (resp.ok) {
+                    const { response, data } = await adminFetch("/api/admin/clear-submissions", { method: "POST" });
+                    if (response.ok) {
                       setMessage("DB limpiada. Recarca para ver cambios.");
                       setSubmissions([]);
                       logAdminAction("clear_db", "Se borró la tabla submissions");
-                    } else if (resp.status === 401) {
+                    } else if (isUnauthorized(response)) {
                       router.push("/admin");
                     } else {
                       setMessage(data?.message || "Error al limpiar la DB");
@@ -335,11 +322,8 @@ export default function ProtectedDashboard() {
               <button
                 className="bc-button bc-button-danger dashboard-btn-danger"
                 onClick={async () => {
-                  const resp = await fetch('/api/admin/logout', {
-                    method: 'POST',
-                    credentials: 'include',
-                  });
-                  if (resp.ok) {
+                  const { response } = await adminFetch('/api/admin/logout', { method: 'POST' });
+                  if (response.ok) {
                     logAdminAction('logout', 'Cierre de sesión admin');
                   }
                   router.push('/admin');

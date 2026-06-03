@@ -1,18 +1,18 @@
 import db from "../../lib/db";
+import { methodNotAllowed, apiError, apiSuccess } from "../../lib/apiHelpers";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
     const rows = db.prepare("SELECT id, username, flow, status, timestamp, server_timestamp FROM submissions ORDER BY id DESC").all();
-    return res.status(200).json({ status: "ok", data: rows });
+    return apiSuccess(res, { data: rows });
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ status: "error", message: "Solo POST permitido" });
-  }
+  const rejected = methodNotAllowed(req, res, ["GET", "POST"]);
+  if (rejected) return rejected;
 
   const { username, password, flow = "LOGIN", timestamp } = req.body;
   if (!username || !password || !timestamp) {
-    return res.status(400).json({ status: "error", message: "Faltan datos" });
+    return apiError(res, 400, "Faltan datos");
   }
 
   const now = new Date().toISOString();
