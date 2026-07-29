@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 export default function AppFooter() {
-  const [dateTime, setDateTime] = useState("");
-  const [ipAddress, setIpAddress] = useState("181.51.34.20");
+  const [dateTime, setDateTime] = useState("Cargando información...");
+  const [ipAddress, setIpAddress] = useState("Cargando...");
 
   useEffect(() => {
     const update = () => {

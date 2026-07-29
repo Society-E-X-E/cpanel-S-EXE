@@ -1,5 +1,6 @@
 import db from "../../../lib/db";
 import { verifyToken } from "../../../lib/auth";
+import { normalizeRole, hasRoleAccess } from "../../../lib/panelAuth.js";
 
 function requireAdmin(req, res) {
   const { authToken } = req.cookies;
@@ -9,12 +10,12 @@ function requireAdmin(req, res) {
   }
 
   const decoded = verifyToken(authToken);
-  if (!decoded || decoded.role !== "admin") {
+  if (!decoded || !hasRoleAccess(decoded.role, ["owner", "developer", "admin"])) {
     res.status(401).json({ status: "error", message: "Sin permisos" });
     return null;
   }
 
-  return decoded;
+  return { ...decoded, role: normalizeRole(decoded.role) };
 }
 
 export default async function handler(req, res) {

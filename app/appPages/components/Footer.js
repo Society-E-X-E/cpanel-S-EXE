@@ -1,4 +1,14 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function Footer() {
+  const [year, setYear] = useState("2026");
+
+  useEffect(() => {
+    setYear(new Date().getFullYear().toString());
+  }, []);
+
   return (
     <footer
       style={{
@@ -52,7 +62,7 @@ export default function Footer() {
           </svg>
         </a>
       </div>
-      <div>© {new Date().getFullYear()} Society . E X E | Dashboard Scam Pro V - 3.0.1 | 
+      <div>© {year} Society . E X E | Dashboard Scam Pro V - 3.0.1 | 
         <a
           href="https://t.me/devcrackpy"
           target="_blank"

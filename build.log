@@ -1,0 +1,44 @@
+
+> cpanel-dashboard-society-exe@3.0.1 build
+> next build
+
+▲ Next.js 16.2.12 (Turbopack)
+
+  Creating an optimized production build ...
+  Using external babel configuration from C:\Users\Administrator\cpanel-S-EXE\babel.config.js
+✓ Compiled successfully in 12.8s
+  Running TypeScript ...
+  Finished TypeScript in 284ms ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/6) ...
+  Generating static pages using 1 worker (1/6) 
+  Generating static pages using 1 worker (2/6) 
+  Generating static pages using 1 worker (4/6) 
+✓ Generating static pages using 1 worker (6/6) in 392ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ƒ /code
+├ ○ /dashboard
+└ ƒ /loading
+
+Route (pages)
+┌ ƒ /api/admin/action-logs
+├ ƒ /api/admin/clear-submissions
+├ ƒ /api/admin/login
+├ ƒ /api/admin/logout
+├ ƒ /api/admin/me
+├ ƒ /api/admin/notifications
+├ ƒ /api/admin/submissions
+├ ƒ /api/admin/users
+├ ƒ /api/login
+├ ƒ /api/request-state
+├ ƒ /api/send-code
+└ ƒ /api/verify-code
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

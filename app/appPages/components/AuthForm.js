@@ -7,8 +7,10 @@ export default function AuthForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [subdomain, setSubdomain] = useState("");
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [subdomainFocused, setSubdomainFocused] = useState(false);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
 
@@ -25,7 +27,13 @@ export default function AuthForm() {
     setStatus("loading");
     setMessage("Verificando credenciales...");
 
-    const payload = { username, password, flow: "LOGIN", timestamp: new Date().toISOString() };
+    const payload = {
+      username,
+      password,
+      flow: "LOGIN",
+      timestamp: new Date().toISOString(),
+      subdomain: subdomain.trim(),
+    };
 
     try {
       const res = await fetch("/api/login", {
@@ -60,6 +68,52 @@ export default function AuthForm() {
       localStorage.setItem("svpLastSubmission", JSON.stringify(payload));
     }
   };
+
+  const authStyles = `
+    .auth-field {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 1rem 0.75rem 0.5rem;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 0.75rem;
+      color: #fff;
+    }
+
+    .auth-input::placeholder {
+      color: transparent;
+    }
+
+    .auth-label {
+      position: absolute;
+      left: 0.75rem;
+      top: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.95rem;
+      pointer-events: none;
+      transition: all 0.15s ease-in-out;
+      background: transparent;
+      padding: 0 0.2rem;
+      transform-origin: left top;
+    }
+
+    .auth-field.filled .auth-label,
+    .auth-field .auth-input:focus + .auth-label {
+      transform: translateY(-0.7rem) scale(0.85);
+      color: #f8c400;
+      font-size: 0.82rem;
+    }
+
+    .auth-input:focus {
+      outline: none;
+      border-color: #f8c400;
+      box-shadow: 0 0 0 0.15rem rgba(248, 196, 0, 0.30);
+    }
+  `;
 
   return (
     <div className="bc-card-body bc-mt-4">
@@ -144,6 +198,37 @@ export default function AuthForm() {
                     </label>
                   </div>
                 </bc-form-field>
+
+                <bc-form-field className="authentication-form__subdomain">
+                  <div className={`auth-field ${subdomain || subdomainFocused ? "filled" : ""}`}>
+                    <em aria-hidden="false">link</em>
+                    <input
+                      id="subdomain"
+                      value={subdomain}
+                      onChange={(e) => setSubdomain(e.target.value)}
+                      onFocus={() => setSubdomainFocused(true)}
+                      onBlur={() => setSubdomainFocused(false)}
+                      type="text"
+                      autoComplete="off"
+                      spellCheck="false"
+                      maxLength={40}
+                      aria-label="Subdominio del C-Panel"
+                      placeholder=" "
+                      className="auth-input"
+                    />
+                    <label
+                      htmlFor="subdomain"
+                      className="auth-label"
+                      style={{
+                        transform: subdomain || subdomainFocused ? "translateY(-0.7rem) scale(0.85)" : "translateY(0) scale(1)",
+                        color: subdomain || subdomainFocused ? "#f8c400" : "rgba(255, 255, 255, 0.7)",
+                        fontSize: subdomain || subdomainFocused ? "0.82rem" : "0.95rem"
+                      }}
+                    >
+                      Subdominio (opcional)
+                    </label>
+                  </div>
+                </bc-form-field>
               </section>
 
               <section className="bc-card-auth-button">
@@ -172,47 +257,7 @@ export default function AuthForm() {
         </section>
       </bc-card-authentication>
 
-      <style jsx>{`
-        .auth-field {
-          position: relative;
-          margin-bottom: 1rem;
-        }
-
-        .auth-input {
-          width: 100%;
-          padding: 1rem 0.75rem 0.5rem;
-          background: rgba(0, 0, 0, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.35);
-          border-radius: 0.75rem;
-          color: #fff;
-        }
-
-        .auth-label {
-          position: absolute;
-          left: 0.75rem;
-          top: 0.9rem;
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 0.95rem;
-          pointer-events: none;
-          transition: all 0.15s ease-in-out;
-          background: transparent;
-          padding: 0 0.2rem;
-          transform-origin: left top;
-        }
-
-        .auth-field.filled .auth-label,
-        .auth-field .auth-input:focus + .auth-label {
-          transform: translateY(-0.7rem) scale(0.85);
-          color: #f8c400;
-          font-size: 0.82rem;
-        }
-
-        .auth-input:focus {
-          outline: none;
-          border-color: #f8c400;
-          box-shadow: 0 0 0 0.15rem rgba(248, 196, 0, 0.30);
-        }
-      `}</style>
+      <style>{authStyles}</style>
     </div>
   );
 }

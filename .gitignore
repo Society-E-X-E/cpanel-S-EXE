@@ -1,19 +1,46 @@
+# Dependencias
 node_modules/
+.pnpm-store/
+
+# Build y artefactos
 .next/
 out/
 build/
-.env*
+dist/
+coverage/
+*.tsbuildinfo
+
+# Variables de entorno y secretos
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.pem
+*.key
+*.crt
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# SQLite temporales
+# Bases de datos locales y temporales
+*.db
+*.db-journal
 *.db-wal
 *.db-shm
+data/*.db
+data/*.db-journal
 data/*.db-wal
 data/*.db-shm
 
-# Logs y entorno
-.env
-.env.local
+# Archivos del sistema
 .DS_Store
+Thumbs.db
+
+# Copias de seguridad y temporales
+*.bak
+*.tmp
+*.swp

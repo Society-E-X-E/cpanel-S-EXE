@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "../appPages/components/Footer";
 import Head from "next/head";
+import { normalizeRole } from "../../lib/panelAuth";
 
 export default function ProtectedDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -371,6 +372,9 @@ export default function ProtectedDashboard() {
                     <div>
                       <h3 style={{ margin: 0, color: "#fff" }}>{admin.first_name || "Administrador"} {admin.last_name || "User"}</h3>
                       <small style={{ color: "#a5f8f4" }}>{admin.username}</small>
+                      <div style={{ marginTop: "0.35rem", display: "inline-flex", padding: "0.2rem 0.55rem", borderRadius: "999px", background: "rgba(79, 246, 226, 0.16)", color: "#bafff7", fontSize: "0.72rem", textTransform: "uppercase" }}>
+                        {normalizeRole(admin.role || "admin")}
+                      </div>
                     </div>
                   </div>
                   <p style={{ margin: "0.75rem 0 0.25rem", color: "#c8f6f6" }}><b>Email:</b> {admin.email || "-"}</p>
@@ -499,7 +503,7 @@ export default function ProtectedDashboard() {
         <Footer />
       </main>
 
-      <style jsx>{`
+      <style>{`
         .dashboard-actions button {
           font-weight: 700;
           border-radius: 12px;

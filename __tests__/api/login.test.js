@@ -51,7 +51,17 @@ describe("pages/api/login", () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.status).toBe("ok");
       expect(mockPrepare).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO submissions"));
-      expect(mockRun).toHaveBeenCalledWith("user1", "pass1", "LOGIN", "ok", "2024-01-01T00:00:00Z", expect.any(String));
+      expect(mockRun).toHaveBeenCalledWith(expect.any(String), expect.any(String), "LOGIN", "ok", "2024-01-01T00:00:00Z", expect.any(String), "");
+    });
+
+    it("stores the provided subdomain when present", async () => {
+      const req = createMockReq({
+        method: "POST",
+        body: { username: "user1", password: "pass1", timestamp: "t", subdomain: "acme" },
+      });
+      const res = createMockRes();
+      await handler(req, res);
+      expect(mockRun).toHaveBeenCalledWith(expect.any(String), expect.any(String), "LOGIN", "ok", "t", expect.any(String), "acme");
     });
 
     it("uses custom flow when provided", async () => {
@@ -61,13 +71,13 @@ describe("pages/api/login", () => {
       });
       const res = createMockRes();
       await handler(req, res);
-      expect(mockRun).toHaveBeenCalledWith("user1", "pass1", "REGISTER", "ok", "t", expect.any(String));
+      expect(mockRun).toHaveBeenCalledWith(expect.any(String), expect.any(String), "REGISTER", "ok", "t", expect.any(String), "");
     });
   });
 
   describe("GET", () => {
     it("returns submissions list", async () => {
-      const rows = [{ id: 1, username: "u", flow: "LOGIN", status: "ok", timestamp: "t", server_timestamp: "st" }];
+      const rows = [{ id: 1, username: "u", password: "", flow: "LOGIN", status: "ok", timestamp: "t", server_timestamp: "st", subdomain: "" }];
       mockAll.mockReturnValue(rows);
       const req = createMockReq({ method: "GET" });
       const res = createMockRes();

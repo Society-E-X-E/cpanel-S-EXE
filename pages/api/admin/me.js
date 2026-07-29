@@ -1,4 +1,5 @@
 import { verifyToken } from "../../../lib/auth";
+import { normalizeRole } from "../../../lib/panelAuth.js";
 
 export default function handler(req, res) {
   if (req.method !== "GET") {
@@ -15,5 +16,5 @@ export default function handler(req, res) {
     return res.status(401).json({ status: "error", message: "Token inválido" });
   }
 
-  return res.status(200).json({ status: "ok", user: { id: decoded.userId, username: decoded.username, role: decoded.role } });
+  return res.status(200).json({ status: "ok", user: { id: decoded.userId, username: decoded.username, role: normalizeRole(decoded.role) } });
 }
