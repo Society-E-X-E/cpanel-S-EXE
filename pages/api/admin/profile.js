@@ -59,7 +59,7 @@ export default function handler(req, res) {
   );
 
   const updated = db.prepare(`
-    SELECT id, username, role, email, phone, avatar_url, bio, social_links, created_at
+    SELECT id, username, role, email, phone, bio, social_links, created_at
     FROM staff_users WHERE id = ?
   `).get(user.id);
   return res.status(200).json({ status: "ok", user: publicUser(updated) });

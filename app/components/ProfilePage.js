@@ -24,25 +24,12 @@ function oauthMessage() {
   return "";
 }
 
-function readAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      if (typeof reader.result === "string") resolve(reader.result);
-      else reject(new Error("No se pudo leer el archivo."));
-    });
-    reader.addEventListener("error", () => reject(new Error("No se pudo leer el archivo.")));
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [providers, setProviders] = useState([]);
   const [connections, setConnections] = useState({});
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  const [photoBusy, setPhotoBusy] = useState(false);
   const [disconnecting, setDisconnecting] = useState("");
 
   const loadSocialAccounts = useCallback(async () => {
@@ -95,49 +82,6 @@ export default function ProfilePage() {
     }
   }
 
-  async function uploadPhoto(file) {
-    if (!file) return;
-    setMessage("");
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 3 * 1024 * 1024) {
-      setMessage("Elige una imagen JPEG, PNG o WebP de hasta 3 MB.");
-      return;
-    }
-
-    setPhotoBusy(true);
-    try {
-      const image = await readAsDataUrl(file);
-      const response = await fetch("/api/admin/profile-photo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "No se pudo cargar la foto.");
-      setField("avatarUrl", data.avatarUrl);
-      setMessage("Foto de perfil actualizada.");
-    } catch (error) {
-      setMessage(error.message);
-    } finally {
-      setPhotoBusy(false);
-    }
-  }
-
-  async function removePhoto() {
-    setPhotoBusy(true);
-    setMessage("");
-    try {
-      const response = await fetch("/api/admin/profile-photo", { method: "DELETE" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "No se pudo quitar la foto.");
-      setField("avatarUrl", "");
-      setMessage("Foto de perfil eliminada.");
-    } catch (error) {
-      setMessage(error.message);
-    } finally {
-      setPhotoBusy(false);
-    }
-  }
-
   async function disconnect(provider) {
     setDisconnecting(provider);
     setMessage("");
@@ -146,6 +90,7 @@ export default function ProfilePage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "No se pudo quitar la conexión.");
       await loadSocialAccounts();
+      if (provider === "google") setField("avatarUrl", "");
       setMessage(data.message);
     } catch (error) {
       setMessage(error.message);
@@ -164,7 +109,7 @@ export default function ProfilePage() {
             <div>
               <span className="eyebrow">Cuenta personal</span>
               <h1>Mi perfil</h1>
-              <p>Actualiza tu información, carga una foto y conecta las cuentas sociales que quieras vincular.</p>
+              <p>Actualiza tu información y conecta las cuentas sociales que quieras vincular.</p>
             </div>
           </section>
           <div className="profile-layout">
@@ -182,21 +127,15 @@ export default function ProfilePage() {
                 <input id="profile-phone" type="tel" value={profile.phone} onChange={(event) => setField("phone", event.target.value)} maxLength={40} />
               </div>
               <div className="field">
-                <label htmlFor="profile-avatar-file">Foto de perfil</label>
-                <input
-                  id="profile-avatar-file"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => uploadPhoto(event.target.files?.[0])}
-                  disabled={photoBusy}
-                />
-                <span className="helper-text">JPEG, PNG o WebP · máximo 3 MB. La imagen se guarda en Cloudinary.</span>
-                {photoBusy && <span className="helper-text">Procesando la foto...</span>}
-                {profile.avatarUrl && (
-                  <button className="button-secondary" type="button" onClick={removePhoto} disabled={photoBusy}>
-                    Quitar foto
-                  </button>
-                )}
+                <label>Foto de perfil</label>
+                <div className="profile-photo-source">
+                  <UserAvatar user={profile} />
+                  <span className="helper-text">
+                    {profile.avatarUrl
+                      ? "Se muestra la foto de tu cuenta Google conectada."
+                      : "Conecta Google para usar su foto de perfil. Si no hay foto disponible, se mostrarán tus iniciales."}
+                  </span>
+                </div>
               </div>
               <div className="field">
                 <label htmlFor="profile-bio">Biografía</label>

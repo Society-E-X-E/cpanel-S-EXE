@@ -59,6 +59,14 @@ button { color: inherit; }
 .login-panel { width: min(100%, 420px); }
 .login-panel h2 { margin: 0; font-size: 1.8rem; letter-spacing: -.04em; }
 .login-panel > p { margin: .55rem 0 2rem; color: var(--muted); font-size: .9rem; line-height: 1.65; }
+.login-oauth { display: grid; gap: .7rem; margin-top: 1.3rem; }
+.login-oauth-divider { display: flex; align-items: center; gap: .75rem; color: #778181; font-size: .72rem; }
+.login-oauth-divider::before, .login-oauth-divider::after { height: 1px; flex: 1; background: var(--border); content: ""; }
+.login-oauth-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+.login-oauth-button { display: flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .5rem; padding: .55rem .65rem; border: 1px solid var(--border); border-radius: .55rem; background: var(--surface-raised); color: var(--text); font-size: .72rem; font-weight: 700; transition: border-color .16s ease, background .16s ease; }
+.login-oauth-button:hover { border-color: var(--accent); background: #151d1e; }
+.login-oauth-button i { color: var(--accent); font-size: .9rem; }
+.login-oauth-note { margin: 0 !important; color: #788282 !important; font-size: .69rem !important; text-align: center; }
 .form-stack { display: grid; gap: 1rem; }
 .field { display: grid; gap: .5rem; }
 .field label { color: #d9dfdf; font-size: .82rem; font-weight: 700; }
@@ -173,6 +181,8 @@ button { color: inherit; }
 .panel-card { padding: 1.25rem; }
 .profile-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(270px, .9fr); gap: 1rem; align-items: start; }
 .profile-form { display: grid; gap: 1rem; }
+.profile-photo-source { display: flex; align-items: center; gap: .8rem; padding: .75rem; border: 1px solid var(--border); border-radius: .55rem; background: #0a0e0f; }
+.profile-photo-source .helper-text { margin: 0; }
 .profile-preview { display: flex; align-items: center; gap: 1rem; }
 .profile-preview .avatar { width: 4rem; height: 4rem; font-size: 1.1rem; }
 .profile-preview h2 { margin: 0; font-size: 1rem; }
@@ -234,6 +244,7 @@ button { color: inherit; }
   .metric-card { min-height: 128px; padding: .8rem; }
   .metric-value { font-size: 1.2rem; }
   .project-grid { grid-template-columns: 1fr; }
+  .login-oauth-buttons { grid-template-columns: 1fr; }
   .integration-banner { align-items: flex-start; flex-direction: column; }
   .page-heading { align-items: flex-start; flex-direction: column; }
   .connection-item { align-items: flex-start; }

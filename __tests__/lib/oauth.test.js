@@ -61,9 +61,32 @@ describe("OAuth helpers", () => {
       displayName: "Team Member",
       username: "member",
       profileUrl: "https://github.com/member",
+      avatarUrl: "",
     });
     expect(result.accessToken).toBe("provider-token");
     expect(result.scopes).toBe("read:user");
+  });
+
+  it("returns Google's HTTPS profile photo for the team avatar", async () => {
+    process.env.GOOGLE_CLIENT_ID = "google-client-id";
+    process.env.GOOGLE_CLIENT_SECRET = "google-client-secret";
+    jest.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "google-token", token_type: "bearer" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sub: "google-subject",
+          name: "Team Member",
+          picture: "https://lh3.googleusercontent.com/profile-photo",
+        }),
+      });
+
+    const result = await exchangeOAuthCode("google", "authorization-code", "pkce-verifier", "https://dashboard.example/callback");
+    expect(result.profile.avatarUrl).toBe("https://lh3.googleusercontent.com/profile-photo");
+    expect(result.scopes).toBe("openid profile");
   });
 
   it("reports which provider apps are configured", () => {

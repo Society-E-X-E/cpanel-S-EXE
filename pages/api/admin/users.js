@@ -25,7 +25,7 @@ function publicTeamMember(user) {
     username: user.username,
     role: user.role,
     email: user.email || "",
-    avatarUrl: user.avatar_url || "",
+    avatarUrl: user.google_avatar_url || "",
     createdAt: user.created_at,
   };
 }
@@ -44,7 +44,9 @@ export default function handler(req, res) {
 
   if (req.method === "GET") {
     const users = db.prepare(`
-      SELECT id, username, role, email, avatar_url, created_at
+      SELECT id, username, role, email,
+        (SELECT avatar_url FROM oauth_links WHERE user_id = staff_users.id AND provider = 'google') AS google_avatar_url,
+        created_at
       FROM staff_users ORDER BY created_at ASC
     `).all().map(publicTeamMember);
     return res.status(200).json({ status: "ok", users });
@@ -67,7 +69,9 @@ export default function handler(req, res) {
         VALUES (?, ?, ?, ?, ?)
       `).run(username.trim(), hashSync(password, 12), role, email.trim(), new Date().toISOString());
       const created = db.prepare(`
-        SELECT id, username, role, email, avatar_url, created_at
+        SELECT id, username, role, email,
+          (SELECT avatar_url FROM oauth_links WHERE user_id = staff_users.id AND provider = 'google') AS google_avatar_url,
+          created_at
         FROM staff_users WHERE id = ?
       `).get(result.lastInsertRowid);
       return res.status(201).json({ status: "ok", user: publicTeamMember(created) });

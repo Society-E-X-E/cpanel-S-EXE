@@ -3,17 +3,48 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const oauthProviders = [
+  { id: "google", label: "Google", icon: "fa-brands fa-google" },
+  { id: "github", label: "GitHub", icon: "fa-brands fa-github" },
+  { id: "gitlab", label: "GitLab", icon: "fa-brands fa-gitlab" },
+  { id: "linkedin", label: "LinkedIn", icon: "fa-brands fa-linkedin" },
+  { id: "x", label: "X", icon: "fa-brands fa-x-twitter" },
+];
+
 export default function LoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [configuredProviders, setConfiguredProviders] = useState([]);
 
   useEffect(() => {
     for (const key of ["svpSubmissions", "svpLastSubmission", "svpFlow"]) {
       localStorage.removeItem(key);
     }
+    const url = new URL(window.location.href);
+    const oauthStatus = url.searchParams.get("oauth");
+    const providerId = url.searchParams.get("provider");
+    const provider = oauthProviders.find((item) => item.id === providerId);
+    if (oauthStatus === "unlinked") {
+      setMessage("Esta cuenta no está vinculada a un miembro del equipo. Inicia sesión con tu usuario y contraseña y conecta la cuenta desde Mi perfil.");
+    } else if (oauthStatus === "error" && provider) {
+      setMessage(`No se pudo iniciar sesión con ${provider.label}. Inténtalo de nuevo.`);
+    } else if (oauthStatus === "unavailable" && provider) {
+      setMessage(`${provider.label} aún no está configurado para iniciar sesión.`);
+    }
+    if (oauthStatus) window.history.replaceState({}, "", `${url.pathname}${url.hash}`);
+
+    fetch("/api/admin/oauth/google?action=login-status")
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "No se pudieron cargar los proveedores.");
+        setConfiguredProviders(data.providers.filter((item) => item.configured).map((item) => item.id));
+      })
+      .catch((error) => {
+        console.error("OAuth provider status request failed:", error);
+      });
   }, []);
 
   async function handleSubmit(event) {
@@ -92,6 +123,24 @@ export default function LoginForm() {
             </button>
             {message && <p className="form-message" role="alert">{message}</p>}
           </form>
+          {configuredProviders.length > 0 && (
+            <div className="login-oauth">
+              <div className="login-oauth-divider"><span>o continúa con</span></div>
+              <div className="login-oauth-buttons">
+                {oauthProviders.filter((provider) => configuredProviders.includes(provider.id)).map((provider) => (
+                  <a
+                    className="login-oauth-button"
+                    href={`/api/admin/oauth/${provider.id}?action=login`}
+                    key={provider.id}
+                  >
+                    <i className={provider.icon} aria-hidden="true" />
+                    <span>Continuar con {provider.label}</span>
+                  </a>
+                ))}
+              </div>
+              <p className="login-oauth-note">Disponible solo para cuentas del equipo previamente vinculadas.</p>
+            </div>
+          )}
         </div>
       </section>
     </main>

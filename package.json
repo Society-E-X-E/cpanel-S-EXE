@@ -11,9 +11,9 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.8.0",
-    "cloudinary": "^2.11.0",
     "dotenv": "^17.3.1",
     "jsonwebtoken": "^9.0.3",
     "next": "^16.2.2",
