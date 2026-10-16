@@ -35,6 +35,7 @@ data/*.db
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm
+data/*.json
 
 # Archivos del sistema
 .DS_Store

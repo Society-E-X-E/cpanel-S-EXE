@@ -3,118 +3,69 @@ import { createMockReq, createMockRes } from "../../helpers";
 const mockGet = jest.fn();
 const mockAll = jest.fn();
 const mockRun = jest.fn();
-const mockPrepare = jest.fn((sql) => {
-  if (sql.includes("SELECT id FROM users")) return { get: mockGet };
-  if (sql.includes("SELECT id, username")) return { all: mockAll };
-  return { run: mockRun, get: mockGet };
-});
+const mockPrepare = jest.fn(() => ({ get: mockGet, all: mockAll, run: mockRun }));
 
 jest.mock("../../../lib/db", () => ({
   __esModule: true,
   default: { prepare: (...args) => mockPrepare(...args) },
 }));
 
-jest.mock("../../../lib/auth", () => ({
-  verifyToken: jest.fn(),
+jest.mock("../../../lib/session", () => ({
+  getCurrentUser: jest.fn(),
+  publicUser: jest.fn((user) => user),
+  respondUnauthorized: jest.fn((res) => res.status(401).json({ status: "error" })),
 }));
 
 jest.mock("bcryptjs", () => ({
-  compareSync: jest.fn(),
-  hashSync: jest.fn(() => "hashed_password"),
+  hashSync: jest.fn(() => "hashed"),
 }));
 
 import handler from "../../../pages/api/admin/users";
-import { verifyToken } from "../../../lib/auth";
+import { getCurrentUser } from "../../../lib/session";
 
-describe("pages/api/admin/users", () => {
+describe("team account management authorization", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("returns 401 if no authToken", async () => {
-    const req = createMockReq({ method: "GET", cookies: {} });
+  it("does not allow moderators to manage accounts", () => {
+    getCurrentUser.mockReturnValue({ id: 5, role: "moderator" });
     const res = createMockRes();
-    await handler(req, res);
-    expect(res.statusCode).toBe(401);
+    handler(createMockReq({ method: "GET" }), res);
+    expect(res.statusCode).toBe(403);
   });
 
-  it("returns 401 if token invalid", async () => {
-    verifyToken.mockReturnValue(null);
-    const req = createMockReq({ method: "GET", cookies: { authToken: "bad" } });
+  it("does not allow an administrator to create an admin", () => {
+    getCurrentUser.mockReturnValue({ id: 1, role: "admin" });
     const res = createMockRes();
-    await handler(req, res);
-    expect(res.statusCode).toBe(401);
+    handler(createMockReq({
+      method: "POST",
+      body: { username: "newadmin", password: "sufficiently-long", role: "admin" },
+    }), res);
+    expect(res.statusCode).toBe(403);
   });
 
-  it("returns 401 if not admin role", async () => {
-    verifyToken.mockReturnValue({ role: "user" });
-    const req = createMockReq({ method: "GET", cookies: { authToken: "tok" } });
+  it("does not allow a CEO to change an Owner role", () => {
+    getCurrentUser.mockReturnValue({ id: 2, role: "ceo" });
+    mockGet.mockReturnValue({ id: 1, username: "owner", role: "owner" });
     const res = createMockRes();
-    await handler(req, res);
-    expect(res.statusCode).toBe(401);
+    handler(createMockReq({ method: "PATCH", body: { id: 1, role: "admin" } }), res);
+    expect(res.statusCode).toBe(403);
+    expect(mockRun).not.toHaveBeenCalled();
   });
 
-  describe("authenticated as admin", () => {
-    beforeEach(() => {
-      verifyToken.mockReturnValue({ userId: 1, username: "admin", role: "admin" });
+  it("allows an administrator to create a moderator", () => {
+    getCurrentUser.mockReturnValue({ id: 1, role: "admin" });
+    mockGet.mockReturnValueOnce(undefined).mockReturnValueOnce({
+      id: 3, username: "newmod", role: "moderator", email: "", phone: "", avatar_url: "", bio: "", social_links: "{}", created_at: "now",
     });
-
-    it("GET returns list of users", async () => {
-      const users = [{ id: 1, username: "admin", role: "admin" }];
-      mockAll.mockReturnValue(users);
-      const req = createMockReq({ method: "GET", cookies: { authToken: "tok" } });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res.body.users).toEqual(users);
-    });
-
-    it("POST returns 400 if username missing", async () => {
-      const req = createMockReq({ method: "POST", cookies: { authToken: "tok" }, body: { password: "pass" } });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(400);
-    });
-
-    it("POST returns 409 if user already exists", async () => {
-      mockGet.mockReturnValue({ id: 2 });
-      const req = createMockReq({ method: "POST", cookies: { authToken: "tok" }, body: { username: "existing", password: "pass" } });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(409);
-    });
-
-    it("POST creates user and returns 201", async () => {
-      mockGet.mockReturnValue(undefined);
-      mockRun.mockReturnValue({ lastInsertRowid: 5 });
-      const req = createMockReq({ method: "POST", cookies: { authToken: "tok" }, body: { username: "newuser", password: "pass123" } });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(201);
-      expect(res.body.user.id).toBe(5);
-      expect(res.body.user.username).toBe("newuser");
-    });
-
-    it("DELETE returns 400 if id missing", async () => {
-      const req = createMockReq({ method: "DELETE", cookies: { authToken: "tok" }, query: {} });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(400);
-    });
-
-    it("DELETE removes user and returns 200", async () => {
-      const req = createMockReq({ method: "DELETE", cookies: { authToken: "tok" }, query: { id: "3" } });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("ok");
-    });
-
-    it("returns 405 for unsupported methods", async () => {
-      const req = createMockReq({ method: "PATCH", cookies: { authToken: "tok" } });
-      const res = createMockRes();
-      await handler(req, res);
-      expect(res.statusCode).toBe(405);
-    });
+    mockRun.mockReturnValue({ lastInsertRowid: 3 });
+    const res = createMockRes();
+    handler(createMockReq({
+      method: "POST",
+      body: { username: "newmod", password: "sufficiently-long", role: "moderator" },
+    }), res);
+    expect(res.statusCode).toBe(201);
+    expect(res.body.user.role).toBe("moderator");
   });
 });

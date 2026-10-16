@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Dashboard | Society . E X E",
-  description: "Área de administración segura: métricas y gestión de solicitudes",
+  description: "Resumen de Society . E X E y sus proyectos.",
 };
 
 export default function DashboardLayout({ children }) {
