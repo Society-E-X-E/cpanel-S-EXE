@@ -45,8 +45,6 @@ Guarda secretos únicamente en el entorno privado del servidor; no los publiques
 
 ## Analítica
 
-Cada miembro puede editar su nombre de usuario, correo, teléfono, foto mediante una URL HTTPS, biografía y enlaces públicos a GitHub, GitLab, LinkedIn, Google y X. Estos enlaces no son autenticación OAuth; no se almacenan tokens de proveedores.
-
 La portada no inventa métricas. Los datos de visitas y disponibilidad aparecen como no conectados hasta configurar una fuente autorizada de analítica. No se capturan contraseñas, OTP ni datos bancarios de visitantes.
 
 La información técnica y de propiedad intelectual de OTP-X debe manejarse según los acuerdos de confidencialidad aplicables. El dashboard muestra solo información general; no publicar material confidencial en perfiles, métricas o registros.
