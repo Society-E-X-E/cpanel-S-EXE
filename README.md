@@ -28,7 +28,22 @@ La base de datos local se crea en `data/app.db`. No publiques `.env.local` ni ar
 
 La API valida permisos en el servidor; ocultar controles en la interfaz no sustituye la autorización.
 
-## Perfiles y analítica
+## Perfiles, OAuth y fotos
+
+Cada miembro puede editar su nombre de usuario, correo, teléfono y biografía. Las fotos de perfil se cargan como archivos JPEG, PNG o WebP (máximo 3 MB) y se guardan en Cloudinary; el servidor valida su firma y aplica una transformación de tamaño.
+
+Las cuentas de GitHub, GitLab, LinkedIn, Google y X se conectan mediante OAuth. El panel solicita solo identidad básica (sin permisos para publicar o modificar contenido), usa PKCE y protege el estado de autorización. Los tokens de acceso se cifran en la base de datos con `OAUTH_TOKEN_ENCRYPTION_KEY` y nunca se envían al navegador. Desconectar elimina el token local; para revocar el permiso concedido, también hay que hacerlo desde los ajustes de aplicaciones autorizadas del proveedor.
+
+Para habilitar estas funciones, configura en `.env.local`:
+
+- `APP_BASE_URL`: origen exacto del dashboard (por ejemplo, `http://localhost:3000` en local y `https://society-exe.site` en producción). En producción debe usar HTTPS.
+- `OAUTH_TOKEN_ENCRYPTION_KEY`: secreto aleatorio de al menos 32 caracteres. No lo cambies sin planificar la renovación de los tokens almacenados.
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET`.
+- El par `*_CLIENT_ID` y `*_CLIENT_SECRET` de cada proveedor que quieras activar. Registra como URL de callback `{APP_BASE_URL}/api/admin/oauth/{provider}`, sustituyendo `{provider}` por `github`, `gitlab`, `linkedin`, `google` o `x`.
+
+Guarda secretos únicamente en el entorno privado del servidor; no los publiques en el repositorio ni los compartas en el navegador. Las conexiones pueden dejarse sin configurar y no aparecerán habilitadas en el perfil.
+
+## Analítica
 
 Cada miembro puede editar su nombre de usuario, correo, teléfono, foto mediante una URL HTTPS, biografía y enlaces públicos a GitHub, GitLab, LinkedIn, Google y X. Estos enlaces no son autenticación OAuth; no se almacenan tokens de proveedores.
 

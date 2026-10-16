@@ -1,45 +1,24 @@
 import db from "../../../lib/db";
 import { getCurrentUser, publicUser, respondUnauthorized } from "../../../lib/session";
 
-const SOCIAL_KEYS = ["github", "gitlab", "linkedin", "google", "x"];
-
 function isText(value, maxLength) {
   return typeof value === "string" && value.length <= maxLength;
 }
 
-function isHttpsUrl(value) {
-  if (!value) return true;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && !url.username && !url.password;
-  } catch {
-    return false;
-  }
-}
-
 function validateProfile(body) {
-  const { username, email, phone, avatarUrl, bio, socialLinks } = body || {};
+  const { username, email, phone, bio } = body || {};
   if (
     !isText(username, 32) ||
     !/^[\p{L}\p{N}._-]{3,32}$/u.test(username.trim()) ||
     !isText(email, 254) ||
     (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) ||
     !isText(phone, 40) ||
-    !isText(avatarUrl, 2048) ||
-    !isHttpsUrl(avatarUrl) ||
-    !isText(bio, 500) ||
-    !socialLinks ||
-    typeof socialLinks !== "object" ||
-    Array.isArray(socialLinks)
+    !isText(bio, 500)
   ) {
     return false;
   }
 
-  return SOCIAL_KEYS.every((key) => (
-    Object.prototype.hasOwnProperty.call(socialLinks, key) &&
-    isText(socialLinks[key], 2048) &&
-    isHttpsUrl(socialLinks[key])
-  )) && Object.keys(socialLinks).every((key) => SOCIAL_KEYS.includes(key));
+  return true;
 }
 
 export default function handler(req, res) {
@@ -57,7 +36,7 @@ export default function handler(req, res) {
 
   const profile = req.body;
   if (!validateProfile(profile)) {
-    return res.status(400).json({ status: "error", message: "Revisa los campos del perfil y usa enlaces HTTPS." });
+    return res.status(400).json({ status: "error", message: "Revisa los campos del perfil e inténtalo de nuevo." });
   }
 
   const username = profile.username.trim();
@@ -69,15 +48,13 @@ export default function handler(req, res) {
 
   db.prepare(`
     UPDATE staff_users
-    SET username = ?, email = ?, phone = ?, avatar_url = ?, bio = ?, social_links = ?
+    SET username = ?, email = ?, phone = ?, bio = ?
     WHERE id = ?
   `).run(
     username,
     profile.email.trim(),
     profile.phone.trim(),
-    profile.avatarUrl.trim(),
     profile.bio.trim(),
-    JSON.stringify(profile.socialLinks),
     user.id,
   );
 
