@@ -85,7 +85,9 @@ export default function LoginForm() {
           <h1>Ideas seguras.<br />Trabajo enfocado.</h1>
           <p>El espacio de trabajo interno para gestionar el sitio y los proyectos de Society . E X E.</p>
         </div>
-        <span className="login-legal">Acceso exclusivo para miembros autorizados.</span>
+        <div className="login-legal">
+          <span>Acceso exclusivo para miembros autorizados.</span>
+        </div>
       </section>
 
       <section className="login-panel-wrap">
@@ -144,6 +146,10 @@ export default function LoginForm() {
               <p className="login-oauth-note">Disponible solo para cuentas del equipo previamente vinculadas.</p>
             </div>
           )}
+          <nav className="login-policy-links" aria-label="Información legal">
+            <a href="/terms">Términos de servicio</a>
+            <a href="/privacy">Política de privacidad</a>
+          </nav>
         </div>
       </section>
     </main>

@@ -50,6 +50,10 @@ export default function Footer() {
             ))}
           </ul>
         </nav>
+        <nav aria-label="Información legal" className="footer-legal-links">
+          <a href="/terms">Términos de servicio</a>
+          <a href="/privacy">Privacidad</a>
+        </nav>
       </footer>
     </>
   );
