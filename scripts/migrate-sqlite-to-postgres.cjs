@@ -11,8 +11,9 @@ neonConfig.webSocketConstructor = ws;
 
 async function main() {
   const sourcePath = path.join(process.cwd(), "data", "app.db");
-  if (!process.env.DATABASE_URL) {
-    throw new Error("Set DATABASE_URL in your local environment before running this migration.");
+  const connectionString = process.env.EXE_DATABASE_URL || process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("Set EXE_DATABASE_URL or DATABASE_URL in your local environment before running this migration.");
   }
   if (!fs.existsSync(sourcePath)) {
     throw new Error("The local SQLite database was not found at data/app.db.");
@@ -20,7 +21,7 @@ async function main() {
 
   const source = new Database(sourcePath, { readonly: true, fileMustExist: true });
   const target = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
     max: 1,
     idleTimeoutMillis: 5000,
     connectionTimeoutMillis: 10000,
