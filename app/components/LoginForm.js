@@ -17,6 +17,12 @@ export default function LoginForm() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [configuredProviders, setConfiguredProviders] = useState([]);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetCodeSent, setResetCodeSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
 
   useEffect(() => {
     for (const key of ["svpSubmissions", "svpLastSubmission", "svpFlow"]) {
@@ -64,12 +70,62 @@ export default function LoginForm() {
         setMessage(data.message || "No se pudo iniciar sesión.");
         return;
       }
-      router.replace("/dashboard");
+      router.replace(data.mustChangePassword ? "/change-password" : "/dashboard");
     } catch (error) {
       console.error("Login request failed:", error);
       setMessage("No se pudo conectar con el servidor. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function requestPasswordReset(event) {
+    event.preventDefault();
+    setResetBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "request", email: resetEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "No se pudo procesar la solicitud.");
+      setResetCodeSent(true);
+      setMessage(data.message);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setResetBusy(false);
+    }
+  }
+
+  async function confirmPasswordReset(event) {
+    event.preventDefault();
+    setResetBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "confirm",
+          email: resetEmail,
+          code: resetCode,
+          newPassword: resetPassword,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "No se pudo restablecer la contraseña.");
+      setResetMode(false);
+      setResetCodeSent(false);
+      setResetCode("");
+      setResetPassword("");
+      setMessage(data.message);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setResetBusy(false);
     }
   }
 
@@ -96,38 +152,72 @@ export default function LoginForm() {
             <span className="brand-mark">.EXE</span>
             <span className="brand-name">Society . E X E</span>
           </div>
-          <span className="eyebrow">Bienvenido de nuevo</span>
-          <h2 style={{ marginTop: ".55rem" }}>Inicia sesión</h2>
-          <p>Usa la cuenta del equipo que te asignaron para continuar.</p>
-          <form className="form-stack" onSubmit={handleSubmit}>
-            <div className="field">
-              <label htmlFor="username">Nombre de usuario</label>
-              <input
-                id="username"
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                required
-              />
-            </div>
-            <div className="field">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </div>
-            <button className="button-primary" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Validando..." : "Entrar al dashboard"}
-              {!isSubmitting && <i className="fa-solid fa-arrow-right" aria-hidden="true" />}
-            </button>
-            {message && <p className="form-message" role="alert">{message}</p>}
-          </form>
-          {configuredProviders.length > 0 && (
+          <span className="eyebrow">{resetMode ? "Recuperación segura" : "Bienvenido de nuevo"}</span>
+          <h2 style={{ marginTop: ".55rem" }}>{resetMode ? "Restablecer contraseña" : "Inicia sesión"}</h2>
+          <p>{resetMode ? "Usa el correo verificado de tu cuenta para recibir un código de un solo uso." : "Usa la cuenta del equipo que te asignaron para continuar."}</p>
+          {!resetMode ? (
+            <>
+              <form className="form-stack" onSubmit={handleSubmit}>
+                <div className="field">
+                  <label htmlFor="username">Nombre de usuario</label>
+                  <input
+                    id="username"
+                    autoComplete="username"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="password">Contraseña</label>
+                  <input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                  />
+                </div>
+                <button className="button-primary" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Validando..." : "Entrar al dashboard"}
+                  {!isSubmitting && <i className="fa-solid fa-arrow-right" aria-hidden="true" />}
+                </button>
+                {message && <p className="form-message" role="alert">{message}</p>}
+              </form>
+              <button className="login-secondary-action" type="button" onClick={() => { setResetMode(true); setMessage(""); }}>
+                ¿Olvidaste tu contraseña?
+              </button>
+            </>
+          ) : (
+            <form className="form-stack" onSubmit={resetCodeSent ? confirmPasswordReset : requestPasswordReset}>
+              <div className="field">
+                <label htmlFor="reset-email">Correo verificado</label>
+                <input id="reset-email" type="email" autoComplete="email" value={resetEmail} onChange={(event) => setResetEmail(event.target.value)} required maxLength={254} />
+              </div>
+              {resetCodeSent && (
+                <>
+                  <div className="field">
+                    <label htmlFor="reset-code">Código de ocho dígitos</label>
+                    <input id="reset-code" inputMode="numeric" autoComplete="one-time-code" value={resetCode} onChange={(event) => setResetCode(event.target.value.replace(/\D/g, "").slice(0, 8))} required />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="reset-new-password">Nueva contraseña</label>
+                    <input id="reset-new-password" type="password" autoComplete="new-password" minLength={12} maxLength={128} value={resetPassword} onChange={(event) => setResetPassword(event.target.value)} required />
+                    <span className="helper-text">Usa entre 12 y 128 caracteres.</span>
+                  </div>
+                </>
+              )}
+              <button className="button-primary" type="submit" disabled={resetBusy}>
+                {resetBusy ? "Procesando..." : resetCodeSent ? "Restablecer contraseña" : "Enviar código"}
+              </button>
+              {message && <p className="form-message" role="status">{message}</p>}
+              <button className="login-secondary-action" type="button" onClick={() => { setResetMode(false); setResetCodeSent(false); setMessage(""); }}>
+                Volver al inicio de sesión
+              </button>
+            </form>
+          )}
+          {!resetMode && configuredProviders.length > 0 && (
             <div className="login-oauth">
               <div className="login-oauth-divider"><span>o continúa con</span></div>
               <div className="login-oauth-buttons">

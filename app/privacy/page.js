@@ -30,10 +30,12 @@ export default function PrivacyPage() {
         <h2>2. Información que se trata</h2>
         <ul>
           <li>
-            <strong>Cuenta y perfil:</strong> nombre de usuario, correo
-            electrónico, teléfono, biografía, rol asignado y fecha de creación.
-            Las cuentas son habilitadas por administradores; el Dashboard no
-            ofrece registro público.
+            <strong>Cuenta y perfil:</strong> nombre de usuario, nombre,
+            apellido, correo electrónico y su estado de verificación, teléfono,
+            biografía, rol asignado y fecha de creación. Las cuentas son
+            habilitadas por administradores; el Dashboard no ofrece registro
+            público. Los miembros autenticados pueden consultar estos datos y
+            los proveedores OAuth conectados en el directorio interno.
           </li>
           <li>
             <strong>Autenticación y seguridad:</strong> contraseña almacenada
@@ -53,6 +55,13 @@ export default function PrivacyPage() {
             Analytics y Speed Insights, que pueden procesar métricas de uso,
             navegación y rendimiento técnico conforme a la configuración del
             servicio y las políticas de Vercel.
+          </li>
+          <li>
+            <strong>Verificación y recuperación:</strong> si solicitas verificar
+            tu correo o restablecer tu contraseña, se genera un código OTP de
+            ocho dígitos, con vigencia de 10 minutos y máximo de cinco intentos.
+            Se almacena un HMAC del código, no el código en texto claro. Los
+            correos se envían mediante Amazon SES.
           </li>
         </ul>
         <p>
@@ -90,8 +99,9 @@ export default function PrivacyPage() {
           correspondiente recibe la solicitud y procesa la autenticación según
           sus propias condiciones y políticas. En producción, los datos pueden
           alojarse o procesarse mediante los proveedores técnicos configurados
-          para el Dashboard, incluidos Vercel y Neon. No controlamos las
-          prácticas independientes de dichos terceros.
+          para el Dashboard, incluidos Vercel, Neon y Amazon Web Services
+          (Amazon SES para el envío de códigos de seguridad). No controlamos
+          las prácticas independientes de dichos terceros.
         </p>
       </section>
 
@@ -110,9 +120,11 @@ export default function PrivacyPage() {
         </p>
         <p>
           Aplicamos medidas técnicas y organizativas acordes con el uso interno
-          del servicio, incluido el almacenamiento cifrado de tokens OAuth y el
-          almacenamiento de contraseñas como hash. Ningún sistema de
-          transmisión o almacenamiento puede garantizar seguridad absoluta.
+          del servicio, incluido el almacenamiento cifrado de tokens OAuth,
+          contraseñas como hash, códigos OTP como HMAC, límites de solicitudes
+          e intentos y revocación de sesiones activas al cambiar o restablecer
+          una contraseña. Ningún sistema de transmisión o almacenamiento puede
+          garantizar seguridad absoluta.
         </p>
       </section>
 

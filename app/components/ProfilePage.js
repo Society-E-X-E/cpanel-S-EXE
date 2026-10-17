@@ -36,6 +36,9 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [disconnecting, setDisconnecting] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailOtpBusy, setEmailOtpBusy] = useState(false);
 
   const loadSocialAccounts = useCallback(async () => {
     const response = await fetch("/api/admin/oauth/github?action=status");
@@ -82,6 +85,8 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: draftProfile.username,
+          firstName: draftProfile.firstName,
+          lastName: draftProfile.lastName,
           email: draftProfile.email,
           phone: draftProfile.phone,
           bio: draftProfile.bio,
@@ -89,6 +94,10 @@ export default function ProfilePage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "No se pudo guardar el perfil.");
+      if (profile.email?.toLowerCase() !== data.user.email?.toLowerCase()) {
+        setEmailOtp("");
+        setEmailOtpSent(false);
+      }
       setProfile((current) => ({ ...current, ...data.user }));
       setDraftProfile(null);
       setEditing(false);
@@ -97,6 +106,48 @@ export default function ProfilePage() {
       setMessage(error.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function requestEmailVerification() {
+    setEmailOtpBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "request" }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "No se pudo enviar el código.");
+      setEmailOtpSent(true);
+      setMessage(data.message);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setEmailOtpBusy(false);
+    }
+  }
+
+  async function verifyEmail() {
+    setEmailOtpBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify", code: emailOtp }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "No se pudo verificar el correo.");
+      setProfile((current) => ({ ...current, emailVerifiedAt: new Date().toISOString() }));
+      setEmailOtp("");
+      setEmailOtpSent(false);
+      setMessage(data.message);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setEmailOtpBusy(false);
     }
   }
 
@@ -193,10 +244,16 @@ export default function ProfilePage() {
                   <h2>{editing ? "Editar perfil" : "Detalles de la cuenta"}</h2>
                 </div>
                 {!editing && (
-                  <button className="button-secondary profile-edit-button" type="button" onClick={startEditing}>
-                    <i className="fa-solid fa-pen" aria-hidden="true" />
-                    Edit Profile
-                  </button>
+                  <div className="profile-heading-actions">
+                    <a className="button-secondary profile-edit-button" href="/change-password">
+                      <i className="fa-solid fa-key" aria-hidden="true" />
+                      Cambiar contraseña
+                    </a>
+                    <button className="button-secondary profile-edit-button" type="button" onClick={startEditing}>
+                      <i className="fa-solid fa-pen" aria-hidden="true" />
+                      Editar perfil
+                    </button>
+                  </div>
                 )}
               </div>
               {editing ? (
@@ -206,8 +263,17 @@ export default function ProfilePage() {
                     <input id="profile-username" value={draftProfile.username || ""} onChange={(event) => setField("username", event.target.value)} required minLength={3} maxLength={32} />
                   </div>
                   <div className="field">
+                    <label htmlFor="profile-first-name">Nombre</label>
+                    <input id="profile-first-name" value={draftProfile.firstName || ""} onChange={(event) => setField("firstName", event.target.value)} maxLength={80} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="profile-last-name">Apellido</label>
+                    <input id="profile-last-name" value={draftProfile.lastName || ""} onChange={(event) => setField("lastName", event.target.value)} maxLength={80} />
+                  </div>
+                  <div className="field">
                     <label htmlFor="profile-email">Correo electrónico</label>
                     <input id="profile-email" type="email" value={draftProfile.email || ""} onChange={(event) => setField("email", event.target.value)} maxLength={254} />
+                    <span className="helper-text">Cambiar el correo elimina su verificación actual; vuelve a verificarlo para usarlo en recuperación.</span>
                   </div>
                   <div className="field">
                     <label htmlFor="profile-phone">Número de teléfono</label>
@@ -239,13 +305,40 @@ export default function ProfilePage() {
               ) : (
                 <dl className="profile-details-list">
                   <div><dt>Nombre de usuario</dt><dd>{profile.username}</dd></div>
+                  <div><dt>Nombre</dt><dd>{profile.firstName || "No configurado"}</dd></div>
+                  <div><dt>Apellido</dt><dd>{profile.lastName || "No configurado"}</dd></div>
                   <div><dt>Correo electrónico</dt><dd>{profile.email || "No configurado"}</dd></div>
+                  <div><dt>Verificación del correo</dt><dd>{profile.emailVerifiedAt ? "Verificado" : "Pendiente"}</dd></div>
                   <div><dt>Número de teléfono</dt><dd>{profile.phone || "No configurado"}</dd></div>
                   <div><dt>Biografía</dt><dd>{profile.bio || "Aún no has añadido una biografía."}</dd></div>
                   <div><dt>Foto de perfil</dt><dd>{profile.avatarUrl ? "Sincronizada con Google" : "Iniciales de usuario"}</dd></div>
                 </dl>
               )}
             </section>
+            {!profile.emailVerifiedAt && !editing && (
+              <section className="panel-card email-verification-card">
+                <div>
+                  <h2>Verifica tu correo</h2>
+                  <p className="helper-text">
+                    {profile.email
+                      ? `Enviaremos un código de un solo uso a ${profile.email}.`
+                      : "Añade primero tu correo en Editar perfil."}
+                  </p>
+                </div>
+                {!emailOtpSent ? (
+                  <button className="button-secondary profile-edit-button" type="button" onClick={requestEmailVerification} disabled={emailOtpBusy || !profile.email}>
+                    {emailOtpBusy ? "Enviando..." : "Enviar código"}
+                  </button>
+                ) : (
+                  <div className="email-otp-entry">
+                    <input aria-label="Código de verificación" inputMode="numeric" autoComplete="one-time-code" maxLength={8} value={emailOtp} onChange={(event) => setEmailOtp(event.target.value.replace(/\D/g, "").slice(0, 8))} />
+                    <button className="button-secondary profile-edit-button" type="button" onClick={verifyEmail} disabled={emailOtpBusy || emailOtp.length !== 8}>
+                      {emailOtpBusy ? "Verificando..." : "Verificar"}
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
           </div>
         </>
       )}

@@ -14,3 +14,7 @@ OTP-X es un proyecto de investigación y desarrollo de Society . E X E enfocado 
 ## Uso del código
 
 Este repositorio es propietario. Consulta [LICENSE](./LICENSE). Los componentes de terceros conservan sus respectivas licencias.
+
+## Seguridad de cuentas
+
+La configuración de Amazon SES, verificación de correo y recuperación de contraseña está documentada en [docs/password-recovery.md](./docs/password-recovery.md).

@@ -242,7 +242,7 @@ describe("OAuth team login", () => {
 
     expect(res.statusCode).toBe(302);
     expect(res.headers.Location).toBe("/dashboard");
-    expect(mockSignToken).toHaveBeenCalledWith({ userId: 17 });
+    expect(mockSignToken).toHaveBeenCalledWith({ userId: 17, tokenVersion: 0 });
     expect(res.headers["Set-Cookie"]).toEqual(expect.arrayContaining([
       expect.stringContaining("authToken=session-jwt"),
       expect.stringContaining("Max-Age=5400"),

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ROLE_LABELS, canManageUsers } from "../../lib/panelAuth";
+import { ROLE_LABELS } from "../../lib/panelAuth";
 import Footer from "./Footer";
 
 function initials(username) {
@@ -49,6 +49,13 @@ export default function WorkspaceShell({ children }) {
     return () => { cancelled = true; };
   }, [router]);
 
+  useEffect(() => {
+    if (!user) return;
+    if (user.mustChangePassword && pathname !== "/change-password") {
+      router.replace("/change-password");
+    }
+  }, [pathname, router, user]);
+
   async function logout() {
     try {
       const response = await fetch("/api/admin/logout", { method: "POST" });
@@ -65,7 +72,7 @@ export default function WorkspaceShell({ children }) {
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: "fa-solid fa-chart-pie" },
     { href: "/profile", label: "Mi perfil", icon: "fa-regular fa-user" },
-    ...(canManageUsers(user.role) ? [{ href: "/team", label: "Equipo", icon: "fa-solid fa-users" }] : []),
+    { href: "/team", label: "Equipo", icon: "fa-solid fa-users" },
   ];
 
   return (

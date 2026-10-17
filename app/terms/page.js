@@ -86,7 +86,19 @@ export default function TermsPage() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2>5. Propiedad intelectual e información confidencial</h2>
+        <h2>5. Directorio interno del equipo</h2>
+        <p>
+          Los miembros autenticados pueden consultar el directorio interno y
+          ver los nombres, correo, teléfono, biografía y proveedores OAuth
+          conectados que cada miembro haya agregado a su perfil. Esta
+          información se limita al uso del equipo; no copies ni compartas sus
+          datos fuera del propósito autorizado y evita incluir información
+          personal que no sea necesaria.
+        </p>
+      </section>
+
+      <section className={SECTION_CLASS}>
+        <h2>6. Propiedad intelectual e información confidencial</h2>
         <p>
           El Dashboard y sus contenidos pertenecen a Society . E X E, a sus
           respectivos titulares o a sus licenciantes. En particular, los
@@ -106,7 +118,7 @@ export default function TermsPage() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2>6. Alcance del proyecto y disponibilidad</h2>
+        <h2>7. Alcance del proyecto y disponibilidad</h2>
         <p>
           El Dashboard es una herramienta de gestión interna; no es un servicio
           bancario, financiero, de autenticación para clientes ni de asesoría.
@@ -124,7 +136,7 @@ export default function TermsPage() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2>7. Cambios y contacto</h2>
+        <h2>8. Cambios y contacto</h2>
         <p>
           Estos términos pueden actualizarse cuando cambie el Dashboard, su
           funcionamiento o las necesidades de Society . E X E. La versión

@@ -26,10 +26,19 @@ describe("team account management authorization", () => {
     mockQuery.mockResolvedValue({ rows: [] });
   });
 
-  it("does not allow moderators to manage accounts", async () => {
+  it("allows moderators to view member profiles without management permissions", async () => {
     getCurrentUser.mockReturnValue({ id: 5, role: "moderator" });
+    mockQuery.mockResolvedValueOnce({ rows: [{ id: 5, username: "member", role: "moderator", connected_auths: [] }] });
     const res = createMockRes();
     await handler(createMockReq({ method: "GET" }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.users[0].connectedAuths).toEqual([]);
+  });
+
+  it("does not allow moderators to create accounts", async () => {
+    getCurrentUser.mockReturnValue({ id: 5, role: "moderator" });
+    const res = createMockRes();
+    await handler(createMockReq({ method: "POST", body: {} }), res);
     expect(res.statusCode).toBe(403);
   });
 
@@ -66,5 +75,6 @@ describe("team account management authorization", () => {
     }), res);
     expect(res.statusCode).toBe(201);
     expect(res.body.user.role).toBe("moderator");
+    expect(mockQuery.mock.calls[0][0]).toContain("must_change_password");
   });
 });

@@ -140,13 +140,14 @@ async function startLoginAuthorization(res, providerId) {
   }
 }
 
-function issueSession(res, userId, priorCookies = []) {
-  const token = signToken({ userId });
+function issueSession(res, user, priorCookies = []) {
+  const token = signToken({ userId: user.id, tokenVersion: user.token_version || 0 });
   const secure = process.env.NODE_ENV === "production" ? " Secure;" : "";
   res.setHeader("Set-Cookie", [
     ...priorCookies,
     `authToken=${token}; HttpOnly; Path=/; Max-Age=5400;${secure} SameSite=Lax`,
   ]);
+  return Boolean(user.must_change_password);
 }
 
 async function completeAuthorization(req, res, providerId) {
@@ -199,7 +200,7 @@ async function completeAuthorization(req, res, providerId) {
 
     if (isLogin) {
       const linkedResult = await db.query(`
-        SELECT u.id
+        SELECT u.id, u.must_change_password, u.token_version
         FROM oauth_links AS link
         JOIN staff_users AS u ON u.id = link.user_id
         WHERE link.provider = $1 AND link.provider_user_id = $2
@@ -224,8 +225,8 @@ async function completeAuthorization(req, res, providerId) {
         linkedUser.id,
         providerId,
       ]);
-      issueSession(res, linkedUser.id, clearedCookies);
-      return redirect(res, "/dashboard");
+      const mustChangePassword = issueSession(res, linkedUser, clearedCookies);
+      return redirect(res, mustChangePassword ? "/change-password" : "/dashboard");
     }
 
     const userResult = await db.query("SELECT id FROM staff_users WHERE id = $1", [transaction.user_id]);

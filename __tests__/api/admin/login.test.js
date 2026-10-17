@@ -22,6 +22,7 @@ describe("team login", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockQuery.mockResolvedValue({ rows: [] });
+    process.env.JWT_SECRET = "test-secret-with-at-least-thirty-two-bytes";
   });
 
   it("rejects requests without credentials", async () => {
@@ -45,5 +46,23 @@ describe("team login", () => {
     expect(res.headers["Set-Cookie"]).toContain("HttpOnly");
     expect(res.headers["Set-Cookie"]).toContain("Max-Age=5400");
     expect(res.headers["Set-Cookie"]).toContain("SameSite=Strict");
+  });
+
+  it("marks a newly-created member login as requiring a password change", async () => {
+    mockQuery.mockResolvedValue({
+      rows: [{
+        id: 7,
+        username: "member",
+        role: "moderator",
+        password_hash: "hash",
+        must_change_password: true,
+        token_version: 0,
+      }],
+    });
+    compare.mockResolvedValue(true);
+    const res = createMockRes();
+    await handler(createMockReq({ method: "POST", body: { username: "member", password: "initial-password" } }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.mustChangePassword).toBe(true);
   });
 });
