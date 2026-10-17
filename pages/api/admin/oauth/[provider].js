@@ -14,6 +14,17 @@ import {
 } from "../../../../lib/oauth";
 
 const TRANSACTION_TTL_MS = 10 * 60 * 1000;
+const PROVIDER_ERROR_CODES = new Set([
+  "access_denied",
+  "invalid_client",
+  "invalid_request",
+  "invalid_scope",
+  "org_internal",
+  "server_error",
+  "temporarily_unavailable",
+  "unauthorized_client",
+  "unsupported_response_type",
+]);
 
 function cookieOptions() {
   return `Path=/; Max-Age=600; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`;
@@ -30,10 +41,11 @@ function providerFromRequest(req) {
   return typeof provider === "string" ? provider : "";
 }
 
-function redirect(res, path, status = "", provider = "") {
+function redirect(res, path, status = "", provider = "", reason = "") {
   const url = new URL(path, process.env.APP_BASE_URL || "http://localhost:3000");
   if (status) url.searchParams.set("oauth", status);
   if (provider) url.searchParams.set("provider", provider);
+  if (reason) url.searchParams.set("reason", reason);
   res.writeHead(302, { Location: `${url.pathname}${url.search}` });
   return res.end();
 }
@@ -159,12 +171,20 @@ async function completeAuthorization(req, res, providerId) {
   const isLogin = Boolean(loginTransaction);
   const transaction = loginTransaction || linkTransaction;
   const expectedCookie = req.cookies?.[stateCookie(providerId, isLogin ? "login" : "link")];
-  const failure = (status = "error") => redirect(res, isLogin ? "/" : "/profile", status, providerId);
+  const failure = (status = "error", reason = "") => redirect(res, isLogin ? "/" : "/profile", status, providerId, reason);
   if (!transaction || Boolean(loginTransaction && linkTransaction) || !safeEqual(state, expectedCookie)) {
     return failure();
   }
 
-  if (Date.now() - new Date(transaction.created_at).getTime() > TRANSACTION_TTL_MS || !code || req.query.error) {
+  if (req.query.error) {
+    const providerError = typeof req.query.error === "string" && PROVIDER_ERROR_CODES.has(req.query.error)
+      ? req.query.error
+      : req.query.error === "org_internal" ? "org_internal" : "other";
+    console.warn(`OAuth authorization rejected by ${providerId}: ${providerError}`);
+    return failure("provider-error", providerError);
+  }
+
+  if (Date.now() - new Date(transaction.created_at).getTime() > TRANSACTION_TTL_MS || !code) {
     return failure();
   }
 

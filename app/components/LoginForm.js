@@ -29,6 +29,15 @@ export default function LoginForm() {
     const provider = oauthProviders.find((item) => item.id === providerId);
     if (oauthStatus === "unlinked") {
       setMessage("Esta cuenta no está vinculada a un miembro del equipo. Inicia sesión con tu usuario y contraseña y conecta la cuenta desde Mi perfil.");
+    } else if (oauthStatus === "provider-error" && provider) {
+      const reason = url.searchParams.get("reason");
+      if (reason === "org_internal") {
+        setMessage("Google limita esta aplicación a usuarios de una organización. En Google Cloud, cambia el público de la pantalla de consentimiento a Externo o añade tu cuenta como usuario de prueba.");
+      } else {
+        setMessage(reason === "access_denied"
+          ? `La autorización de ${provider.label} fue denegada o está restringida por la organización.`
+          : `El proveedor ${provider.label} rechazó la autorización. Revisa la configuración OAuth e inténtalo de nuevo.`);
+      }
     } else if (oauthStatus === "error" && provider) {
       setMessage(`No se pudo iniciar sesión con ${provider.label}. Inténtalo de nuevo.`);
     } else if (oauthStatus === "unavailable" && provider) {

@@ -89,6 +89,66 @@ describe("OAuth helpers", () => {
     expect(result.scopes).toBe("openid profile");
   });
 
+  it("retrieves and returns LinkedIn identity, email, and profile photo", async () => {
+    process.env.LINKEDIN_CLIENT_ID = "linkedin-client-id";
+    process.env.LINKEDIN_CLIENT_SECRET = "linkedin-client-secret";
+    const fetchMock = jest.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "linkedin-token", token_type: "Bearer" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sub: "linkedin-subject",
+          name: "Team Member",
+          email: "member@example.com",
+          picture: "https://media.licdn.example/member.jpg",
+        }),
+      });
+
+    const result = await exchangeOAuthCode("linkedin", "authorization-code", "pkce-verifier", "https://dashboard.example/callback");
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toMatch(/^Bearer /);
+    expect(result.profile).toEqual({
+      subject: "linkedin-subject",
+      displayName: "Team Member",
+      username: "member@example.com",
+      profileUrl: "",
+      avatarUrl: "https://media.licdn.example/member.jpg",
+    });
+    expect(result.scopes).toBe("openid profile email");
+  });
+
+  it("retrieves a GitLab account using the read_user scope", async () => {
+    process.env.GITLAB_CLIENT_ID = "gitlab-client-id";
+    process.env.GITLAB_CLIENT_SECRET = "gitlab-client-secret";
+    const fetchMock = jest.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "gitlab-token", token_type: "Bearer" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 42,
+          username: "member",
+          name: "Team Member",
+          web_url: "https://gitlab.com/member",
+        }),
+      });
+
+    const result = await exchangeOAuthCode("gitlab", "authorization-code", "pkce-verifier", "https://dashboard.example/callback");
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toMatch(/^Bearer /);
+    expect(result.profile).toEqual({
+      subject: "42",
+      displayName: "Team Member",
+      username: "member",
+      profileUrl: "https://gitlab.com/member",
+      avatarUrl: "",
+    });
+    expect(result.scopes).toBe("read_user");
+  });
+
   it("reports which provider apps are configured", () => {
     process.env.GITHUB_CLIENT_ID = "client-id";
     process.env.GITHUB_CLIENT_SECRET = "client-secret";
