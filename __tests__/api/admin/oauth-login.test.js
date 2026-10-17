@@ -84,6 +84,7 @@ jest.mock("../../../lib/oauth", () => {
 
 import handler from "../../../pages/api/admin/oauth/[provider]";
 import { getCurrentUser } from "../../../lib/session";
+import { OAuthProviderError } from "../../../lib/oauth";
 
 describe("OAuth team login", () => {
   const originalEnv = { ...process.env };
@@ -102,6 +103,8 @@ describe("OAuth team login", () => {
     process.env.GITLAB_CLIENT_SECRET = "gitlab-client-secret";
     process.env.LINKEDIN_CLIENT_ID = "linkedin-client-id";
     process.env.LINKEDIN_CLIENT_SECRET = "linkedin-client-secret";
+    process.env.X_CLIENT_ID = "x-client-id";
+    process.env.X_CLIENT_SECRET = "x-client-secret";
     process.env.NODE_ENV = "production";
     getCurrentUser.mockReturnValue(null);
   });
@@ -188,6 +191,29 @@ describe("OAuth team login", () => {
       "https://media.licdn.example/member.jpg",
     ]));
     expect(mockLinkedConnections[0]).not.toContain("linkedin-access-token");
+  });
+
+  it("logs sanitized provider stage and redirects with a diagnostic for X API failures", async () => {
+    getCurrentUser.mockResolvedValue({ id: 23, role: "admin" });
+    const log = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    const beginRes = createMockRes();
+    await handler(createMockReq({
+      method: "GET",
+      query: { provider: "x" },
+    }), beginRes);
+    const state = beginRes.headers["Set-Cookie"].match(/society_oauth_x=([^;]+)/)[1];
+
+    mockExchangeOAuthCode.mockRejectedValueOnce(new OAuthProviderError("x", "profile_fetch", 403, "access_den denied"));
+    const callbackRes = createMockRes();
+    await handler(createMockReq({
+      method: "GET",
+      query: { provider: "x", state, code: "authorization-code" },
+      cookies: { society_oauth_x: state },
+    }), callbackRes);
+
+    expect(callbackRes.headers.Location).toBe("/profile?oauth=provider-error&provider=x&reason=profile-http-403");
+    expect(log).toHaveBeenCalledWith("OAuth provider request failed: provider=x stage=profile_fetch status=403");
   });
 
   it("returns a safe Google organization restriction reason to the login page", async () => {

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import WorkspaceShell, { UserAvatar } from "./WorkspaceShell";
+import { oauthProviderErrorMessage } from "./oauthMessages";
 import { ROLE_LABELS } from "../../lib/panelAuth";
 
 const socialProviders = [
@@ -22,12 +23,7 @@ function oauthMessage() {
   if (status === "connected" && provider) return `${provider.label} se conectó correctamente.`;
   if (status === "conflict" && provider) return `Esta cuenta de ${provider.label} ya está conectada a otro usuario del equipo.`;
   if (status === "provider-error" && provider) {
-    if (reason === "org_internal") return "Google limita esta aplicación a usuarios de una organización. En Google Cloud, cambia el público de la pantalla de consentimiento a Externo o añade tu cuenta como usuario de prueba.";
-    if (reason === "invalid_scope") return `${provider.label} rechazó los permisos solicitados. Revisa los scopes y productos habilitados en la aplicación OAuth.`;
-    if (reason === "unauthorized_client" || reason === "invalid_client") return `${provider.label} rechazó la aplicación OAuth. Revisa su Client ID, Client Secret y el tipo de aplicación.`;
-    if (reason === "invalid_request") return `${provider.label} rechazó la solicitud. Verifica que el Redirect URI registrado coincida exactamente con el de esta aplicación.`;
-    if (reason === "access_denied") return `La autorización de ${provider.label} fue denegada o está restringida por la organización.`;
-    return `${provider.label} rechazó la autorización. Revisa la configuración OAuth y vuelve a intentarlo.`;
+    return oauthProviderErrorMessage(provider.id, provider.label, reason);
   }
   if (status === "error" && provider) return `No se pudo conectar ${provider.label}. Revisa la autorización e inténtalo de nuevo.`;
   return "";

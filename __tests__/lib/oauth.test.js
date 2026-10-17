@@ -179,6 +179,50 @@ describe("OAuth helpers", () => {
     });
   });
 
+  it("identifies LinkedIn token exchange HTTP failures without exposing response content", async () => {
+    process.env.LINKEDIN_CLIENT_ID = "linkedin-client-id";
+    process.env.LINKEDIN_CLIENT_SECRET = "linkedin-client-secret";
+    jest.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: "invalid_client", error_description: "sensitive provider response" }),
+    });
+
+    await expect(exchangeOAuthCode("linkedin", "authorization-code", "pkce-verifier", "https://dashboard.example/callback"))
+      .rejects.toMatchObject({
+        name: "OAuthProviderError",
+        providerId: "linkedin",
+        step: "token_exchange",
+        status: 401,
+        providerCode: "invalid_client",
+        diagnosticReason: "token-http-401",
+      });
+  });
+
+  it("identifies X profile-fetch HTTP failures", async () => {
+    process.env.X_CLIENT_ID = "x-client-id";
+    process.env.X_CLIENT_SECRET = "x-client-secret";
+    jest.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "x-access-token", token_type: "bearer" }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: async () => ({ errors: [{ message: "sensitive provider response" }] }),
+      });
+
+    await expect(exchangeOAuthCode("x", "authorization-code", "pkce-verifier", "https://dashboard.example/callback"))
+      .rejects.toMatchObject({
+        name: "OAuthProviderError",
+        providerId: "x",
+        step: "profile_fetch",
+        status: 403,
+        diagnosticReason: "profile-http-403",
+      });
+  });
+
   it("reports which provider apps are configured", () => {
     process.env.GITHUB_CLIENT_ID = "client-id";
     process.env.GITHUB_CLIENT_SECRET = "client-secret";

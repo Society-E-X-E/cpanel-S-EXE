@@ -11,6 +11,7 @@ import {
   getProviderStatus,
   getRedirectUri,
   createPkcePair,
+  OAuthProviderError,
 } from "../../../../lib/oauth";
 
 const TRANSACTION_TTL_MS = 10 * 60 * 1000;
@@ -268,7 +269,11 @@ async function completeAuthorization(req, res, providerId) {
     ]);
     return redirect(res, "/profile", "connected", providerId);
   } catch (error) {
-    console.error(`OAuth callback failed for ${providerId}:`, error);
+    if (error instanceof OAuthProviderError) {
+      console.error(`OAuth provider request failed: provider=${providerId} stage=${error.step} status=${error.status}`);
+      return failure("provider-error", error.diagnosticReason);
+    }
+    console.error(`OAuth callback failed for ${providerId}: ${error instanceof Error ? error.name : "UnknownError"}`);
     return failure();
   }
 }
