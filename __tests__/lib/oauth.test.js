@@ -149,6 +149,36 @@ describe("OAuth helpers", () => {
     expect(result.scopes).toBe("read_user");
   });
 
+  it("authenticates X confidential clients with HTTP Basic during token exchange", async () => {
+    process.env.X_CLIENT_ID = "x-client-id";
+    process.env.X_CLIENT_SECRET = "x-client-secret";
+    const fetchMock = jest.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "x-access-token", token_type: "bearer" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { id: "x-user-id", name: "Team Member", username: "member" } }),
+      });
+
+    const result = await exchangeOAuthCode("x", "authorization-code", "pkce-verifier", "https://dashboard.example/api/admin/oauth/x");
+    const tokenRequest = fetchMock.mock.calls[0][1];
+    expect(tokenRequest.headers.Authorization).toBe(
+      `Basic ${Buffer.from("x-client-id:x-client-secret").toString("base64")}`,
+    );
+    expect(tokenRequest.body.get("client_id")).toBeNull();
+    expect(tokenRequest.body.get("client_secret")).toBeNull();
+    expect(fetchMock.mock.calls[1][0]).toBe("https://api.x.com/2/users/me?user.fields=name,username");
+    expect(result.profile).toEqual({
+      subject: "x-user-id",
+      displayName: "Team Member",
+      username: "member",
+      profileUrl: "https://x.com/member",
+      avatarUrl: "",
+    });
+  });
+
   it("reports which provider apps are configured", () => {
     process.env.GITHUB_CLIENT_ID = "client-id";
     process.env.GITHUB_CLIENT_SECRET = "client-secret";
