@@ -21,17 +21,17 @@ function validateProfile(body) {
   return true;
 }
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "GET" && req.method !== "PUT") {
     res.setHeader("Allow", ["GET", "PUT"]);
     return res.status(405).json({ status: "error", message: "Método no permitido" });
   }
 
-  const user = getCurrentUser(req);
+  const user = await getCurrentUser(req);
   if (!user) return respondUnauthorized(res);
 
   if (req.method === "GET") {
-    return res.status(200).json({ status: "ok", user: publicUser(user) });
+    return res.status(200).json({ status: "ok", user: await publicUser(user) });
   }
 
   const profile = req.body;
@@ -40,27 +40,37 @@ export default function handler(req, res) {
   }
 
   const username = profile.username.trim();
-  const duplicate = db.prepare("SELECT id FROM staff_users WHERE username = ? COLLATE NOCASE AND id != ?")
-    .get(username, user.id);
+  const duplicateResult = await db.query(
+    "SELECT id FROM staff_users WHERE lower(username) = lower($1) AND id <> $2",
+    [username, user.id],
+  );
+  const duplicate = duplicateResult.rows[0];
   if (duplicate) {
     return res.status(409).json({ status: "error", message: "Ese nombre de usuario ya está en uso." });
   }
 
-  db.prepare(`
-    UPDATE staff_users
-    SET username = ?, email = ?, phone = ?, bio = ?
-    WHERE id = ?
-  `).run(
-    username,
-    profile.email.trim(),
-    profile.phone.trim(),
-    profile.bio.trim(),
-    user.id,
-  );
+  try {
+    await db.query(`
+      UPDATE staff_users
+      SET username = $1, email = $2, phone = $3, bio = $4
+      WHERE id = $5
+    `, [
+      username,
+      profile.email.trim(),
+      profile.phone.trim(),
+      profile.bio.trim(),
+      user.id,
+    ]);
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(409).json({ status: "error", message: "Ese nombre de usuario ya está en uso." });
+    }
+    throw error;
+  }
 
-  const updated = db.prepare(`
+  const { rows } = await db.query(`
     SELECT id, username, role, email, phone, bio, social_links, created_at
-    FROM staff_users WHERE id = ?
-  `).get(user.id);
-  return res.status(200).json({ status: "ok", user: publicUser(updated) });
+    FROM staff_users WHERE id = $1
+  `, [user.id]);
+  return res.status(200).json({ status: "ok", user: await publicUser(rows[0]) });
 }

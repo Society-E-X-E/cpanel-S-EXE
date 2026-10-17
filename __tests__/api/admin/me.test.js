@@ -12,23 +12,23 @@ import { getCurrentUser } from "../../../lib/session";
 describe("current team session endpoint", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it("rejects unsupported methods", () => {
+  it("rejects unsupported methods", async () => {
     const res = createMockRes();
-    handler(createMockReq({ method: "POST" }), res);
+    await handler(createMockReq({ method: "POST" }), res);
     expect(res.statusCode).toBe(405);
   });
 
-  it("returns 401 when no current account exists", () => {
+  it("returns 401 when no current account exists", async () => {
     getCurrentUser.mockReturnValue(null);
     const res = createMockRes();
-    handler(createMockReq(), res);
+    await handler(createMockReq(), res);
     expect(res.statusCode).toBe(401);
   });
 
-  it("returns the current database-backed account", () => {
+  it("returns the current database-backed account", async () => {
     getCurrentUser.mockReturnValue({ id: 2, username: "member", role: "admin" });
     const res = createMockRes();
-    handler(createMockReq(), res);
+    await handler(createMockReq(), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.user).toEqual({ id: 2, username: "member", role: "admin" });
   });

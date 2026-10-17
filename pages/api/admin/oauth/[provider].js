@@ -81,12 +81,12 @@ async function startAuthorization(res, userId, providerId) {
     const state = crypto.randomBytes(32).toString("base64url");
     const stateHash = crypto.createHash("sha256").update(state).digest("hex");
     const createdAt = new Date().toISOString();
-    db.prepare("DELETE FROM oauth_transactions WHERE user_id = ? AND provider = ?").run(userId, providerId);
-    db.prepare("DELETE FROM oauth_transactions WHERE created_at < ?").run(new Date(Date.now() - TRANSACTION_TTL_MS).toISOString());
-    db.prepare(`
+    await db.query("DELETE FROM oauth_transactions WHERE user_id = $1 AND provider = $2", [userId, providerId]);
+    await db.query("DELETE FROM oauth_transactions WHERE created_at < $1", [new Date(Date.now() - TRANSACTION_TTL_MS).toISOString()]);
+    await db.query(`
       INSERT INTO oauth_transactions (state_hash, user_id, provider, code_verifier_encrypted, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(stateHash, userId, providerId, encryptOAuthSecret(pkce.verifier), createdAt);
+      VALUES ($1, $2, $3, $4, $5)
+    `, [stateHash, userId, providerId, encryptOAuthSecret(pkce.verifier), createdAt]);
 
     res.setHeader("Set-Cookie", `${stateCookie(providerId)}=${state}; ${cookieOptions()}`);
     return res.writeHead(302, {
@@ -110,12 +110,12 @@ async function startLoginAuthorization(res, providerId) {
     const state = crypto.randomBytes(32).toString("base64url");
     const stateHash = crypto.createHash("sha256").update(state).digest("hex");
     const createdAt = new Date().toISOString();
-    db.prepare("DELETE FROM oauth_login_transactions WHERE provider = ?").run(providerId);
-    db.prepare("DELETE FROM oauth_login_transactions WHERE created_at < ?").run(new Date(Date.now() - TRANSACTION_TTL_MS).toISOString());
-    db.prepare(`
+    await db.query("DELETE FROM oauth_login_transactions WHERE provider = $1", [providerId]);
+    await db.query("DELETE FROM oauth_login_transactions WHERE created_at < $1", [new Date(Date.now() - TRANSACTION_TTL_MS).toISOString()]);
+    await db.query(`
       INSERT INTO oauth_login_transactions (state_hash, provider, code_verifier_encrypted, created_at)
-      VALUES (?, ?, ?, ?)
-    `).run(stateHash, providerId, encryptOAuthSecret(pkce.verifier), createdAt);
+      VALUES ($1, $2, $3, $4)
+    `, [stateHash, providerId, encryptOAuthSecret(pkce.verifier), createdAt]);
 
     res.setHeader("Set-Cookie", `${stateCookie(providerId, "login")}=${state}; ${cookieOptions()}`);
     return res.writeHead(302, {
@@ -142,13 +142,19 @@ async function completeAuthorization(req, res, providerId) {
   const state = typeof req.query.state === "string" ? req.query.state : "";
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const stateHash = crypto.createHash("sha256").update(state).digest("hex");
-  const loginTransaction = db.prepare("SELECT * FROM oauth_login_transactions WHERE state_hash = ? AND provider = ?")
-    .get(stateHash, providerId);
-  const linkTransaction = db.prepare("SELECT * FROM oauth_transactions WHERE state_hash = ? AND provider = ?")
-    .get(stateHash, providerId);
+  const loginResult = await db.query(
+    "SELECT * FROM oauth_login_transactions WHERE state_hash = $1 AND provider = $2",
+    [stateHash, providerId],
+  );
+  const linkResult = await db.query(
+    "SELECT * FROM oauth_transactions WHERE state_hash = $1 AND provider = $2",
+    [stateHash, providerId],
+  );
+  const loginTransaction = loginResult.rows[0];
+  const linkTransaction = linkResult.rows[0];
   const clearedCookies = clearStateCookies(res, providerId);
-  db.prepare("DELETE FROM oauth_login_transactions WHERE state_hash = ?").run(stateHash);
-  db.prepare("DELETE FROM oauth_transactions WHERE state_hash = ?").run(stateHash);
+  await db.query("DELETE FROM oauth_login_transactions WHERE state_hash = $1", [stateHash]);
+  await db.query("DELETE FROM oauth_transactions WHERE state_hash = $1", [stateHash]);
 
   const isLogin = Boolean(loginTransaction);
   const transaction = loginTransaction || linkTransaction;
@@ -171,20 +177,21 @@ async function completeAuthorization(req, res, providerId) {
     );
 
     if (isLogin) {
-      const linkedUser = db.prepare(`
+      const linkedResult = await db.query(`
         SELECT u.id
         FROM oauth_links AS link
         JOIN staff_users AS u ON u.id = link.user_id
-        WHERE link.provider = ? AND link.provider_user_id = ?
-      `).get(providerId, result.profile.subject);
+        WHERE link.provider = $1 AND link.provider_user_id = $2
+      `, [providerId, result.profile.subject]);
+      const linkedUser = linkedResult.rows[0];
       if (!linkedUser) return failure("unlinked");
 
-      db.prepare(`
+      await db.query(`
         UPDATE oauth_links
-        SET display_name = ?, username = ?, profile_url = ?, avatar_url = ?,
-            access_token_encrypted = ?, token_expires_at = ?, scopes = ?, updated_at = ?
-        WHERE user_id = ? AND provider = ?
-      `).run(
+        SET display_name = $1, username = $2, profile_url = $3, avatar_url = $4,
+            access_token_encrypted = $5, token_expires_at = $6, scopes = $7, updated_at = $8
+        WHERE user_id = $9 AND provider = $10
+      `, [
         result.profile.displayName,
         result.profile.username,
         result.profile.profileUrl,
@@ -195,24 +202,26 @@ async function completeAuthorization(req, res, providerId) {
         new Date().toISOString(),
         linkedUser.id,
         providerId,
-      );
+      ]);
       issueSession(res, linkedUser.id, clearedCookies);
       return redirect(res, "/dashboard");
     }
 
-    const user = db.prepare("SELECT id FROM staff_users WHERE id = ?").get(transaction.user_id);
+    const userResult = await db.query("SELECT id FROM staff_users WHERE id = $1", [transaction.user_id]);
+    const user = userResult.rows[0];
     if (!user) return failure();
-    const linkedElsewhere = db.prepare(`
-      SELECT user_id FROM oauth_links WHERE provider = ? AND provider_user_id = ? AND user_id != ?
-    `).get(providerId, result.profile.subject, user.id);
+    const linkedElsewhereResult = await db.query(`
+      SELECT user_id FROM oauth_links WHERE provider = $1 AND provider_user_id = $2 AND user_id <> $3
+    `, [providerId, result.profile.subject, user.id]);
+    const linkedElsewhere = linkedElsewhereResult.rows[0];
     if (linkedElsewhere) return failure("conflict");
 
     const now = new Date().toISOString();
-    db.prepare(`
+    await db.query(`
       INSERT INTO oauth_links (
         user_id, provider, provider_user_id, display_name, username, profile_url, avatar_url,
         access_token_encrypted, token_expires_at, scopes, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       ON CONFLICT(user_id, provider) DO UPDATE SET
         provider_user_id = excluded.provider_user_id,
         display_name = excluded.display_name,
@@ -223,7 +232,7 @@ async function completeAuthorization(req, res, providerId) {
         token_expires_at = excluded.token_expires_at,
         scopes = excluded.scopes,
         updated_at = excluded.updated_at
-    `).run(
+    `, [
       user.id,
       providerId,
       result.profile.subject,
@@ -236,7 +245,7 @@ async function completeAuthorization(req, res, providerId) {
       result.scopes,
       now,
       now,
-    );
+    ]);
     return redirect(res, "/profile", "connected", providerId);
   } catch (error) {
     console.error(`OAuth callback failed for ${providerId}:`, error);
@@ -250,9 +259,16 @@ export default async function handler(req, res) {
     return res.status(404).json({ status: "error", message: "Proveedor OAuth no válido." });
   }
 
+  if (req.method !== "GET" && req.method !== "DELETE") {
+    res.setHeader("Allow", ["GET", "DELETE"]);
+    return res.status(405).json({ status: "error", message: "Método no permitido." });
+  }
+
   if (req.method === "GET" && req.query.action === "login-status") {
     return res.status(200).json({ status: "ok", providers: getProviderStatus() });
   }
+
+  await db.migrate();
 
   if (req.method === "GET" && (req.query.code || req.query.error || req.query.state)) {
     return completeAuthorization(req, res, providerId);
@@ -263,12 +279,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET" && req.query.action === "status") {
-    const user = getCurrentUser(req);
+    const user = await getCurrentUser(req);
     if (!user) return respondUnauthorized(res);
-    const connections = db.prepare(`
+    const { rows: connections } = await db.query(`
       SELECT provider, display_name, username, profile_url, avatar_url, created_at
-      FROM oauth_links WHERE user_id = ?
-    `).all(user.id);
+      FROM oauth_links WHERE user_id = $1
+    `, [user.id]);
     return res.status(200).json({
       status: "ok",
       providers: getProviderStatus(),
@@ -283,15 +299,15 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
-    const user = getCurrentUser(req);
+    const user = await getCurrentUser(req);
     if (!user) return respondUnauthorized(res);
     return startAuthorization(res, user.id, providerId);
   }
 
   if (req.method === "DELETE") {
-    const user = getCurrentUser(req);
+    const user = await getCurrentUser(req);
     if (!user) return respondUnauthorized(res);
-    db.prepare("DELETE FROM oauth_links WHERE user_id = ? AND provider = ?").run(user.id, providerId);
+    await db.query("DELETE FROM oauth_links WHERE user_id = $1 AND provider = $2", [user.id, providerId]);
     return res.status(200).json({
       status: "ok",
       message: "Se quitó la conexión y el token local. Si quieres revocar el permiso del proveedor, hazlo también en su configuración de aplicaciones autorizadas.",

@@ -1,9 +1,9 @@
-import { compareSync } from "bcryptjs";
+import { compare } from "bcryptjs";
 import db from "../../../lib/db";
 import { signToken } from "../../../lib/auth";
 import { normalizeRole } from "../../../lib/panelAuth.js";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).json({ status: "error", message: `Método ${req.method} no permitido` });
@@ -15,12 +15,14 @@ export default function handler(req, res) {
   }
 
   try {
-    const user = db.prepare(`
+    await db.migrate();
+    const { rows } = await db.query(`
       SELECT id, username, password_hash, role
-      FROM staff_users WHERE username = ? COLLATE NOCASE
-    `).get(username.trim());
+      FROM staff_users WHERE lower(username) = lower($1)
+    `, [username.trim()]);
+    const user = rows[0];
 
-    if (!user || !compareSync(password, user.password_hash)) {
+    if (!user || !(await compare(password, user.password_hash))) {
       return res.status(401).json({ status: "error", message: "Acceso denegado" });
     }
 

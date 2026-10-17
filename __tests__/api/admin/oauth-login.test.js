@@ -2,36 +2,31 @@ import { createMockReq, createMockRes } from "../../helpers";
 
 const mockTransactions = new Map();
 const mockHasLinkedAccount = { value: true };
-const mockPrepare = jest.fn((sql) => ({
-  get: (...args) => {
-    if (sql.includes("SELECT * FROM oauth_login_transactions")) {
-      return mockTransactions.get(args[0]);
+const mockQuery = jest.fn(async (sql, args = []) => {
+  if (sql.includes("SELECT * FROM oauth_login_transactions")) {
+    const transaction = mockTransactions.get(args[0]);
+    return { rows: transaction ? [transaction] : [] };
+  }
+  if (sql.includes("SELECT * FROM oauth_transactions")) return { rows: [] };
+  if (sql.includes("FROM oauth_links AS link")) {
+    return { rows: mockHasLinkedAccount.value ? [{ id: 17 }] : [] };
+  }
+  if (sql.includes("INSERT INTO oauth_login_transactions")) {
+    mockTransactions.set(args[0], {
+      state_hash: args[0],
+      provider: args[1],
+      code_verifier_encrypted: args[2],
+      created_at: args[3],
+    });
+  } else if (sql.includes("DELETE FROM oauth_login_transactions WHERE provider")) {
+    for (const [hash, transaction] of mockTransactions) {
+      if (transaction.provider === args[0]) mockTransactions.delete(hash);
     }
-    if (sql.includes("SELECT * FROM oauth_transactions")) return undefined;
-    if (sql.includes("FROM oauth_links AS link")) {
-      return mockHasLinkedAccount.value ? { id: 17 } : undefined;
-    }
-    return undefined;
-  },
-  all: () => [],
-  run: (...args) => {
-    if (sql.includes("INSERT INTO oauth_login_transactions")) {
-      mockTransactions.set(args[0], {
-        state_hash: args[0],
-        provider: args[1],
-        code_verifier_encrypted: args[2],
-        created_at: args[3],
-      });
-    } else if (sql.includes("DELETE FROM oauth_login_transactions WHERE provider")) {
-      for (const [hash, transaction] of mockTransactions) {
-        if (transaction.provider === args[0]) mockTransactions.delete(hash);
-      }
-    } else if (sql.includes("DELETE FROM oauth_login_transactions WHERE state_hash")) {
-      mockTransactions.delete(args[0]);
-    }
-    return {};
-  },
-}));
+  } else if (sql.includes("DELETE FROM oauth_login_transactions WHERE state_hash")) {
+    mockTransactions.delete(args[0]);
+  }
+  return { rows: [] };
+});
 const mockSignToken = jest.fn(() => "session-jwt");
 const mockExchangeOAuthCode = jest.fn(async () => ({
   profile: {
@@ -48,7 +43,7 @@ const mockExchangeOAuthCode = jest.fn(async () => ({
 
 jest.mock("../../../lib/db", () => ({
   __esModule: true,
-  default: { prepare: (...args) => mockPrepare(...args) },
+  default: { migrate: jest.fn(), query: (...args) => mockQuery(...args) },
 }));
 
 jest.mock("../../../lib/auth", () => ({
