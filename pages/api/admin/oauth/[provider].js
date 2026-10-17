@@ -145,7 +145,7 @@ function issueSession(res, userId, priorCookies = []) {
   const secure = process.env.NODE_ENV === "production" ? " Secure;" : "";
   res.setHeader("Set-Cookie", [
     ...priorCookies,
-    `authToken=${token}; HttpOnly; Path=/; Max-Age=3600;${secure} SameSite=Lax`,
+    `authToken=${token}; HttpOnly; Path=/; Max-Age=5400;${secure} SameSite=Lax`,
   ]);
 }
 

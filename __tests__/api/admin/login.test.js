@@ -43,6 +43,7 @@ describe("team login", () => {
     await handler(createMockReq({ method: "POST", body: { username: "member", password: "a-long-password" } }), res);
     expect(res.statusCode).toBe(200);
     expect(res.headers["Set-Cookie"]).toContain("HttpOnly");
+    expect(res.headers["Set-Cookie"]).toContain("Max-Age=5400");
     expect(res.headers["Set-Cookie"]).toContain("SameSite=Strict");
   });
 });

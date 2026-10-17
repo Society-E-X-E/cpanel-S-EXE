@@ -8,7 +8,7 @@ describe("lib/auth", () => {
     const token = signToken({ userId: 12 });
     const decoded = jwt.verify(token, SECRET);
     expect(decoded.userId).toBe(12);
-    expect(decoded.exp - decoded.iat).toBe(3600);
+    expect(decoded.exp - decoded.iat).toBe(5400);
   });
 
   it("rejects invalid, expired and incorrectly signed tokens", () => {

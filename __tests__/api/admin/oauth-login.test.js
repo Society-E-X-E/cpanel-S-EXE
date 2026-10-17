@@ -245,6 +245,7 @@ describe("OAuth team login", () => {
     expect(mockSignToken).toHaveBeenCalledWith({ userId: 17 });
     expect(res.headers["Set-Cookie"]).toEqual(expect.arrayContaining([
       expect.stringContaining("authToken=session-jwt"),
+      expect.stringContaining("Max-Age=5400"),
       expect.stringContaining("society_oauth_login_google=;"),
     ]));
   });

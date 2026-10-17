@@ -1,5 +1,7 @@
 # Social OAuth provider setup
 
+GitHub, GitLab, and Google are currently available in the dashboard. LinkedIn and X are temporarily hidden from the login and profile interfaces while their OAuth setup is reviewed; the instructions below are retained for when they are re-enabled.
+
 The social-account callbacks use the production origin `https://dashboard.society-exe.site`. Register each provider's callback URL exactly as shown below; it must not point to the site homepage.
 
 ## GitLab

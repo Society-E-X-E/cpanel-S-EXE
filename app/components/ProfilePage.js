@@ -8,9 +8,7 @@ import { ROLE_LABELS } from "../../lib/panelAuth";
 const socialProviders = [
   { id: "github", label: "GitHub", icon: "fa-brands fa-github" },
   { id: "gitlab", label: "GitLab", icon: "fa-brands fa-gitlab" },
-  { id: "linkedin", label: "LinkedIn", icon: "fa-brands fa-linkedin" },
   { id: "google", label: "Google", icon: "fa-brands fa-google" },
-  { id: "x", label: "X", icon: "fa-brands fa-x-twitter" },
 ];
 
 function oauthMessage() {
@@ -31,6 +29,8 @@ function oauthMessage() {
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
+  const [draftProfile, setDraftProfile] = useState(null);
+  const [editing, setEditing] = useState(false);
   const [providers, setProviders] = useState([]);
   const [connections, setConnections] = useState({});
   const [message, setMessage] = useState("");
@@ -58,7 +58,18 @@ export default function ProfilePage() {
   }, [loadSocialAccounts]);
 
   function setField(field, value) {
-    setProfile((current) => ({ ...current, [field]: value }));
+    setDraftProfile((current) => ({ ...current, [field]: value }));
+  }
+
+  function startEditing() {
+    setDraftProfile({ ...profile });
+    setEditing(true);
+    setMessage("");
+  }
+
+  function cancelEditing() {
+    setDraftProfile(null);
+    setEditing(false);
   }
 
   async function saveProfile(event) {
@@ -70,15 +81,17 @@ export default function ProfilePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: profile.username,
-          email: profile.email,
-          phone: profile.phone,
-          bio: profile.bio,
+          username: draftProfile.username,
+          email: draftProfile.email,
+          phone: draftProfile.phone,
+          bio: draftProfile.bio,
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "No se pudo guardar el perfil.");
       setProfile((current) => ({ ...current, ...data.user }));
+      setDraftProfile(null);
+      setEditing(false);
       setMessage("Perfil actualizado.");
     } catch (error) {
       setMessage(error.message);
@@ -95,7 +108,7 @@ export default function ProfilePage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "No se pudo quitar la conexión.");
       await loadSocialAccounts();
-      if (provider === "google") setField("avatarUrl", "");
+      if (provider === "google") setProfile((current) => ({ ...current, avatarUrl: "" }));
       setMessage(data.message);
     } catch (error) {
       setMessage(error.message);
@@ -117,55 +130,27 @@ export default function ProfilePage() {
               <p>Actualiza tu información y conecta las cuentas sociales que quieras vincular.</p>
             </div>
           </section>
+          {message && <p className={`form-message profile-message${message.includes("actualizad") || message.includes("eliminad") || message.includes("conectó") || message.includes("Perfil") ? " success" : ""}`} role="status">{message}</p>}
           <div className="profile-layout">
-            <form className="panel-card profile-form" onSubmit={saveProfile}>
-              <div className="field">
-                <label htmlFor="profile-username">Nombre de usuario</label>
-                <input id="profile-username" value={profile.username} onChange={(event) => setField("username", event.target.value)} required minLength={3} maxLength={32} />
-              </div>
-              <div className="field">
-                <label htmlFor="profile-email">Correo electrónico</label>
-                <input id="profile-email" type="email" value={profile.email} onChange={(event) => setField("email", event.target.value)} maxLength={254} />
-              </div>
-              <div className="field">
-                <label htmlFor="profile-phone">Número de teléfono</label>
-                <input id="profile-phone" type="tel" value={profile.phone} onChange={(event) => setField("phone", event.target.value)} maxLength={40} />
-              </div>
-              <div className="field">
-                <label>Foto de perfil</label>
-                <div className="profile-photo-source">
+            <aside className="profile-sidebar">
+              <section className="panel-card profile-summary">
+                <div className="profile-preview">
                   <UserAvatar user={profile} />
-                  <span className="helper-text">
-                    {profile.avatarUrl
-                      ? "Se muestra la foto de tu cuenta Google conectada."
-                      : "Conecta Google para usar su foto de perfil. Si no hay foto disponible, se mostrarán tus iniciales."}
-                  </span>
+                  <div>
+                    <h2>{profile.username}</h2>
+                    <p>{ROLE_LABELS[user.role]}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="field">
-                <label htmlFor="profile-bio">Biografía</label>
-                <textarea id="profile-bio" value={profile.bio} onChange={(event) => setField("bio", event.target.value)} maxLength={500} />
-                <span className="helper-text">{profile.bio.length}/500 caracteres</span>
-              </div>
-              {message && <p className={`form-message${message.includes("actualizad") || message.includes("eliminad") || message.includes("conectó") || message.includes("Perfil") ? " success" : ""}`} role="status">{message}</p>}
-              <button className="button-primary" type="submit" disabled={saving}>
-                {saving ? "Guardando..." : "Guardar cambios"}
-              </button>
-            </form>
-            <aside className="panel-card profile-summary">
-              <div className="profile-preview">
-                <UserAvatar user={profile} />
-                <div>
-                  <h2>{profile.username}</h2>
-                  <p>{ROLE_LABELS[user.role]}</p>
+                <p className="profile-bio">{profile.bio || "Tu biografía aparecerá aquí."}</p>
+                <div className="profile-contact">
+                  <span><i className="fa-regular fa-envelope" aria-hidden="true" />{profile.email || "Correo sin configurar"}</span>
+                  <span><i className="fa-solid fa-phone" aria-hidden="true" />{profile.phone || "Teléfono sin configurar"}</span>
                 </div>
-              </div>
-              <p className="profile-bio">{profile.bio || "Tu biografía aparecerá aquí."}</p>
-              <div className="section-heading connection-heading">
-                <h2>Cuentas conectadas</h2>
-              </div>
-              <div className="connection-list">
-                {socialProviders.map((provider) => {
+                <div className="section-heading connection-heading">
+                  <h2>Cuentas conectadas</h2>
+                </div>
+                <div className="connection-list">
+                  {socialProviders.map((provider) => {
                   const connection = connections[provider.id];
                   const isConfigured = providers.some((item) => item.id === provider.id && item.configured);
                   return (
@@ -196,10 +181,71 @@ export default function ProfilePage() {
                       )}
                     </div>
                   );
-                })}
-              </div>
-              <p className="helper-text connection-note">Se solicita acceso de solo lectura a la identidad básica. Al desconectar se elimina el token cifrado del panel; para revocar el acceso del proveedor, hazlo también en los ajustes de sus aplicaciones autorizadas.</p>
+                  })}
+                </div>
+                <p className="helper-text connection-note">Se solicita acceso de solo lectura a la identidad básica. Al desconectar se elimina el token cifrado del panel; para revocar el acceso del proveedor, hazlo también en los ajustes de sus aplicaciones autorizadas.</p>
+              </section>
             </aside>
+            <section className="panel-card profile-details">
+              <div className="profile-details-heading">
+                <div>
+                  <span className="eyebrow">Información personal</span>
+                  <h2>{editing ? "Editar perfil" : "Detalles de la cuenta"}</h2>
+                </div>
+                {!editing && (
+                  <button className="button-secondary profile-edit-button" type="button" onClick={startEditing}>
+                    <i className="fa-solid fa-pen" aria-hidden="true" />
+                    Edit Profile
+                  </button>
+                )}
+              </div>
+              {editing ? (
+                <form className="profile-form" onSubmit={saveProfile}>
+                  <div className="field">
+                    <label htmlFor="profile-username">Nombre de usuario</label>
+                    <input id="profile-username" value={draftProfile.username || ""} onChange={(event) => setField("username", event.target.value)} required minLength={3} maxLength={32} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="profile-email">Correo electrónico</label>
+                    <input id="profile-email" type="email" value={draftProfile.email || ""} onChange={(event) => setField("email", event.target.value)} maxLength={254} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="profile-phone">Número de teléfono</label>
+                    <input id="profile-phone" type="tel" value={draftProfile.phone || ""} onChange={(event) => setField("phone", event.target.value)} maxLength={40} />
+                  </div>
+                  <div className="field">
+                    <label>Foto de perfil</label>
+                    <div className="profile-photo-source">
+                      <UserAvatar user={profile} />
+                      <span className="helper-text">
+                        {profile.avatarUrl
+                          ? "Se muestra la foto de tu cuenta Google conectada."
+                          : "Conecta Google para usar su foto de perfil. Si no hay foto disponible, se mostrarán tus iniciales."}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="profile-bio">Biografía</label>
+                    <textarea id="profile-bio" value={draftProfile.bio || ""} onChange={(event) => setField("bio", event.target.value)} maxLength={500} />
+                    <span className="helper-text">{(draftProfile.bio || "").length}/500 caracteres</span>
+                  </div>
+                  <div className="profile-form-actions">
+                    <button className="button-secondary profile-cancel-button" type="button" onClick={cancelEditing} disabled={saving}>Cancelar</button>
+                    <button className="button-primary profile-save-button" type="submit" disabled={saving}>
+                      {saving ? "Guardando..." : "Guardar cambios"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <dl className="profile-details-list">
+                  <div><dt>Nombre de usuario</dt><dd>{profile.username}</dd></div>
+                  <div><dt>Correo electrónico</dt><dd>{profile.email || "No configurado"}</dd></div>
+                  <div><dt>Número de teléfono</dt><dd>{profile.phone || "No configurado"}</dd></div>
+                  <div><dt>Biografía</dt><dd>{profile.bio || "Aún no has añadido una biografía."}</dd></div>
+                  <div><dt>Foto de perfil</dt><dd>{profile.avatarUrl ? "Sincronizada con Google" : "Iniciales de usuario"}</dd></div>
+                </dl>
+              )}
+            </section>
           </div>
         </>
       )}

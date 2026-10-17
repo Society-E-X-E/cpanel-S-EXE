@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
     res.setHeader(
       "Set-Cookie",
-      `authToken=${token}; HttpOnly; Path=/; Max-Age=3600; ${isProduction ? "Secure;" : ""} SameSite=Strict`
+      `authToken=${token}; HttpOnly; Path=/; Max-Age=5400; ${isProduction ? "Secure;" : ""} SameSite=Strict`
     );
 
     return res.status(200).json({ status: "ok", user: { id: user.id, username: user.username, role } });

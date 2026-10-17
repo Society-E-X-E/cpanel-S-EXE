@@ -8,8 +8,6 @@ const oauthProviders = [
   { id: "google", label: "Google", icon: "fa-brands fa-google" },
   { id: "github", label: "GitHub", icon: "fa-brands fa-github" },
   { id: "gitlab", label: "GitLab", icon: "fa-brands fa-gitlab" },
-  { id: "linkedin", label: "LinkedIn", icon: "fa-brands fa-linkedin" },
-  { id: "x", label: "X", icon: "fa-brands fa-x-twitter" },
 ];
 
 export default function LoginForm() {
@@ -136,9 +134,10 @@ export default function LoginForm() {
                     className="login-oauth-button"
                     href={`/api/admin/oauth/${provider.id}?action=login`}
                     key={provider.id}
+                    aria-label={`Continuar con ${provider.label}`}
+                    title={`Continuar con ${provider.label}`}
                   >
                     <i className={provider.icon} aria-hidden="true" />
-                    <span>Continuar con {provider.label}</span>
                   </a>
                 ))}
               </div>

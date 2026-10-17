@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ROLE_LABELS, canManageUsers } from "../../lib/panelAuth";
+import Footer from "./Footer";
 
 function initials(username) {
   return String(username || "S").slice(0, 2).toUpperCase();
@@ -110,6 +111,7 @@ export default function WorkspaceShell({ children }) {
           <span className="topbar-user">{ROLE_LABELS[user.role]}</span>
         </header>
         <main className="content">{typeof children === "function" ? children(user) : children}</main>
+        <Footer />
       </div>
     </div>
   );
