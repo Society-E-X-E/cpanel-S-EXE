@@ -34,7 +34,26 @@ their password.
      secrets. Never expose these values to client-side variables or commit
      them to the repository.
 
-4. Deploy and test delivery with a verified team mailbox. Check SES sending
+4. Sign in to AWS locally with the account/role for the SES region, then
+   publish or update the dashboard's managed template:
+
+   ```powershell
+   aws sso login
+   npm run ses:template
+   ```
+
+   The command reads `AWS_REGION` from `.env.local` (or `.env`) and uses the
+   AWS SDK's default credential chain. It creates or updates the
+   `SocietySecurityCodeV1` template in that region. The template definition
+   lives in [templates/security-code.json](../templates/security-code.json);
+   deployment requires `ses:GetEmailTemplate` and either
+   `ses:CreateEmailTemplate` or `ses:UpdateEmailTemplate`. Keep those
+   management permissions on the deployment/operator identity, not the
+   dashboard's runtime sender role. Runtime delivery uses `ses:SendEmail`.
+   Templates are regional, so publish them separately to every region used by
+   the application.
+
+5. Deploy and test delivery with a verified team mailbox. Check SES sending
    metrics, bounce/complaint handling, and the application's server logs before
    enabling recovery for the team.
 
