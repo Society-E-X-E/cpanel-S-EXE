@@ -13,8 +13,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(root, ".env.local") });
 dotenv.config({ path: path.join(root, ".env") });
 
-if (!process.env.AWS_REGION) {
-  throw new Error("AWS_REGION must be configured before syncing the SES template.");
+if (!process.env.AWS_REGION || !/^[a-z0-9-]+$/.test(process.env.AWS_REGION)) {
+  throw new Error(
+    "AWS_REGION must be an AWS region identifier (for example, us-east-2), not a SES identity ARN.",
+  );
 }
 
 const definition = JSON.parse(
