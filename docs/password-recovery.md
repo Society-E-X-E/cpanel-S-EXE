@@ -39,11 +39,14 @@ their password.
    Grant that runtime role `secretsmanager:GetSecretValue` only on the exact
    ARN of the `OTP_HASH_SECRET` secret in the selected region. Add
    `kms:Decrypt` for the specific KMS key only if the secret uses a
-   customer-managed key. Also grant `ses:SendEmail` only on the verified
-   sender identity, because the dashboard sends OTP messages through the same
-   federated role. Do not grant template-management permissions to the
-   runtime role. For local development, use an AWS CLI profile/SSO; remove
-   long-lived access keys from `.env.local`.
+   customer-managed key. The runtime role sends SES-managed templates, so
+   grant `ses:SendTemplatedEmail` only on the sender identities used by the
+   dashboard. For this domain, restrict the resources to
+   `arn:aws:ses:REGION:ACCOUNT:identity/society-exe.site` and
+   `arn:aws:ses:REGION:ACCOUNT:identity/*@society-exe.site`; the wildcard
+   covers only email identities at that domain. Do not grant
+   template-management permissions to the runtime role. For local development,
+   use an AWS CLI profile/SSO; remove long-lived access keys from `.env.local`.
 
 4. Sign in to AWS locally with a profile for the SES region, then publish or
    update the dashboard's managed template:
@@ -60,7 +63,8 @@ their password.
    deployment requires `ses:GetEmailTemplate` and either
    `ses:CreateEmailTemplate` or `ses:UpdateEmailTemplate`. Keep those
    management permissions on the deployment/operator identity, not the
-   dashboard's runtime sender role. Runtime delivery uses `ses:SendEmail`.
+   dashboard's runtime sender role. Runtime delivery uses
+   `ses:SendTemplatedEmail`.
    Templates are regional, so publish them separately to every region used by
    the application.
 
