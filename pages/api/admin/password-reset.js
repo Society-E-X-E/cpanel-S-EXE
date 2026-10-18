@@ -1,5 +1,6 @@
 import { hash } from "bcryptjs";
 import db from "../../../lib/db";
+import { getSafeAwsErrorDetails } from "../../../lib/awsErrorDetails";
 import { validateEmailConfiguration } from "../../../lib/mailer";
 import {
   claimOtpRequestLimit,
@@ -46,7 +47,7 @@ async function requestReset(req, res) {
         ipLimitClaimed: true,
       });
     } catch (error) {
-      console.error("Password-reset OTP delivery failed:", error instanceof Error ? error.name : "UnknownError");
+      console.error("Password-reset OTP delivery failed:", getSafeAwsErrorDetails(error));
     }
   }
   return res.status(202).json({ status: "ok", message: GENERIC_REQUEST_MESSAGE });

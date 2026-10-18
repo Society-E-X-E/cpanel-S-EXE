@@ -1,4 +1,5 @@
 import db from "../../../lib/db";
+import { getSafeAwsErrorDetails } from "../../../lib/awsErrorDetails";
 import { validateEmailConfiguration } from "../../../lib/mailer";
 import { getCurrentUser, respondUnauthorized } from "../../../lib/session";
 import {
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
         return res.status(429).json({ status: "error", message: "Se alcanzó el límite de códigos. Espera antes de volver a intentarlo." });
       }
     } catch (error) {
-      console.error("Email-verification OTP delivery failed:", error instanceof Error ? error.name : "UnknownError");
+      console.error("Email-verification OTP delivery failed:", getSafeAwsErrorDetails(error));
       return res.status(503).json({ status: "error", message: "No se pudo enviar el código. Inténtalo más tarde." });
     }
     return res.status(200).json({ status: "ok", message: "Enviamos un código de verificación a tu correo." });
