@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   const user = await getCurrentUser(req);
   if (!user) return respondUnauthorized(res);
   try {
-    validateOtpConfiguration();
+    await validateOtpConfiguration();
     if (req.body?.action === "request") validateEmailConfiguration();
   } catch (error) {
     console.error("Email-verification email configuration is invalid:", error instanceof Error ? error.name : "UnknownError");

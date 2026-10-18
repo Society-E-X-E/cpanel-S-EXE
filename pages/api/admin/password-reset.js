@@ -117,7 +117,7 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   await db.migrate();
   try {
-    validateOtpConfiguration();
+    await validateOtpConfiguration();
     if (req.body?.action === "request") validateEmailConfiguration();
   } catch (error) {
     console.error("Password-reset email configuration is invalid:", error instanceof Error ? error.name : "UnknownError");

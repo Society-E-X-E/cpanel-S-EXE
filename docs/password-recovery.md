@@ -19,23 +19,34 @@ their password.
    domain.
 2. Request production access for the SES region if the AWS account is still in
    the SES sandbox. The sandbox only permits sending to verified recipients.
-3. Configure these server-side environment variables in the deployment
-   platform and local development environment:
+3. Store the OTP HMAC secret in AWS Secrets Manager in the same region as the
+   application configuration. This project expects a JSON secret containing
+   a string property named `OTP_HASH_SECRET`. Configure these server-side
+   environment variables in Vercel:
 
-   - `AWS_REGION`: the SES region containing the verified sender identity.
+   - `AWS_REGION`: the AWS region containing both the SES identity and OTP
+     secret (for example, `us-east-2`).
    - `SES_FROM_EMAIL`: an address authorized by that SES identity.
-   - `OTP_HASH_SECRET`: a random secret of at least 32 characters, used only
-     to HMAC OTPs and rate-limit keys. Generate a distinct value, for example
-     with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
-   - AWS credentials via the platform's workload identity/role where available.
-     If static credentials are unavoidable, use a dedicated IAM identity with
-     only `ses:SendEmail` for the verified sender identity; set
-     `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` as protected deployment
-     secrets. Never expose these values to client-side variables or commit
-     them to the repository.
+   - `OTP_HASH_SECRET_ID`: the Secrets Manager secret name or ARN (for example,
+     `OTP_HASH_SECRET`). The value is fetched server-side and cached in memory
+     for up to five minutes.
+   - `AWS_ROLE_ARN`: the ARN of a dedicated IAM role trusted by Vercel OIDC.
+     Use the role only for the production Vercel environment and restrict its
+     trust policy to this Vercel team, project, and environment. The AWS SDK
+     uses short-lived federated credentials; do not put AWS access keys in
+     Vercel variables or `.env.local`.
 
-4. Sign in to AWS locally with the account/role for the SES region, then
-   publish or update the dashboard's managed template:
+   Grant that runtime role `secretsmanager:GetSecretValue` only on the exact
+   ARN of the `OTP_HASH_SECRET` secret in the selected region. Add
+   `kms:Decrypt` for the specific KMS key only if the secret uses a
+   customer-managed key. Also grant `ses:SendEmail` only on the verified
+   sender identity, because the dashboard sends OTP messages through the same
+   federated role. Do not grant template-management permissions to the
+   runtime role. For local development, use an AWS CLI profile/SSO; remove
+   long-lived access keys from `.env.local`.
+
+4. Sign in to AWS locally with a profile for the SES region, then publish or
+   update the dashboard's managed template:
 
    ```powershell
    aws sso login
@@ -53,7 +64,16 @@ their password.
    Templates are regional, so publish them separately to every region used by
    the application.
 
-5. Deploy and test delivery with a verified team mailbox. Check SES sending
+5. Configure Vercel OIDC with AWS by adding an IAM OIDC provider for Vercel,
+   then create a role whose trust policy restricts the `sub` claim to the
+   exact team, project, and `production` environment, and whose `aud` claim
+   matches the Vercel team. Follow Vercel's current
+   [AWS OIDC setup guide](https://vercel.com/docs/oidc/aws); add the role ARN
+   as `AWS_ROLE_ARN` in Vercel. The dashboard's AWS clients use the Vercel
+   OIDC credential provider whenever this role ARN is configured. Do not grant
+   this role template-management permissions.
+
+6. Deploy and test delivery with a verified team mailbox. Check SES sending
    metrics, bounce/complaint handling, and the application's server logs before
    enabling recovery for the team.
 
@@ -62,6 +82,9 @@ or not an account exists, to reduce account enumeration. Codes contain eight
 digits, expire after 10 minutes, are limited to five verification attempts,
 are single-use, and have per-IP and per-account request limits. A successful
 reset increments the account's token version, invalidating existing sessions.
+Replacing the Secrets Manager value changes the HMAC key and invalidates OTP
+challenges created under the previous key; wait for outstanding codes to
+expire or invalidate them before rotating the secret.
 Failed password logins are throttled by IP and by the IP/username pair; the
 dashboard blocks after eight failures for the same pair or 30 failures from
 one IP in a 15-minute window.
