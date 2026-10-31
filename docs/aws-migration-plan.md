@@ -152,3 +152,14 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 - Updated `.github/workflows/webpack.yml` in commit `54b790bd45f0b3688d6fcf73c6fb615583cc02fa` to run `npm audit --json` against the lockfile-installed dependency tree and upload the JSON report as a short-retention artifact for each Node matrix job.
 - The audit is diagnostic-only at this stage and will not fail the build merely because advisories exist. Review the severity summary and package paths before making targeted upgrades; do not run `npm audit fix --force` without compatibility review.
 - The first audit result for this change is pending CI execution and must be recorded after the workflow finishes.
+
+
+### Security follow-up and dependency audit results — 2026-10-31
+
+- The project owner confirmed that the exposed Neon PostgreSQL password has been rotated. This is a user-reported completion; no password or connection string is stored in this document. Verify that every authorized consumer has the updated credential and that the old credential no longer works. Keep the database and project intact.
+- Lockfile-based `npm audit --json` completed successfully as a diagnostic step on both Node.js 22.x and 24.x in workflow run `41245123096`, commit `54b790bd45f0b3688d6fcf73c6fb615583cc02fa`.
+- Both reports agree: **23 advisories** — 0 critical, 4 high, 16 moderate, 3 low. These are dependency advisories, not proof that the application has been exploited.
+- The report identifies high-severity advisories in the Vercel OIDC credential-provider dependency chain (including `@vercel/oidc-aws-credentials-provider` and transitive `zod`), plus older Jest/Babel-related packages contributing most of the moderate findings. Several suggested fixes involve major-version changes or odd downgrade suggestions; do not blindly apply them.
+- Next remediation sequence: inspect `package.json` and lockfile dependency paths; determine whether `@vercel/cli-config` / OIDC packages are actually needed in this application or only arrive transitively; identify supported patched versions; upgrade in a focused branch; rerun Jest, both Node build jobs, Docker smoke test, and audit. Preserve test tooling compatibility and review lockfile diff.
+- Audit artifacts `npm-audit-node-22` and `npm-audit-node-24` were uploaded with 7-day retention, expiring 2026-11-07. Reports matched across both Node versions.
+- These results do not change the AWS deployment gate: no production resources or traffic were changed. AWS container validation run `41245122976` was still in progress at the time of this update; record its final result separately.
