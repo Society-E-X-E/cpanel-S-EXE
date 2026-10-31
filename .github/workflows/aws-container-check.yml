@@ -47,4 +47,34 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: society-exe-dashboard:validation
+
+      - name: Start container with non-production smoke-test settings
+        env:
+          JWT_SECRET: ci-smoke-test-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+        run: |
+          docker run --detach --rm \
+            --name society-exe-dashboard-smoke \
+            --publish 127.0.0.1:3000:3000 \
+            --env NODE_ENV=production \
+            --env JWT_SECRET="$JWT_SECRET" \
+            society-exe-dashboard:validation
+
+      - name: Verify dashboard HTTP response
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ -o /tmp/dashboard-home.html; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs society-exe-dashboard-smoke
+              exit 1
+            fi
+            sleep 2
+          done
+          grep -q "Society" /tmp/dashboard-home.html
+
+      - name: Stop smoke-test container
+        if: always()
+        run: docker stop society-exe-dashboard-smoke || true
