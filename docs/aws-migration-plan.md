@@ -131,3 +131,24 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 - Run `41242658145` (`Create/Delete Branch for Pull Request`) failed in the Neon branch-creation step; Setup passed and deletion was skipped. Neon API credentials/access remain an owner action. Do not echo or expose `NEON_API_KEY`.
 - Added Jest execution (`npm test -- --runInBand`) to the build-validation workflow in commit `7ee741e8228486ac80a2dfea601dba4b057911eb`. The run for this commit has not yet been confirmed in the available Actions result feed.
 - Test files do exist under `__tests__/`, including admin login/password-reset and OAuth helper tests. This corrects the earlier statement that no Jest test files were found.
+
+### Neon preview-branch validation — 2026-10-31
+
+- After the repository owner updated/configured the Neon API key, the failed Create Neon Branch job was rerun.
+- GitHub Actions run `41242953320`, job `124666631308`, completed successfully. Its log explicitly reports: `Branch preview/pr-5-aws-migration/bootstrap-plan created successfully`.
+- This confirms the configured Neon API key worked for branch creation in this run. It does not prove the branch was subsequently deleted; the Delete Neon Branch job was skipped in this run, so verify cleanup/expiry and avoid creating duplicate preview branches.
+- The database password and connection strings were inadvertently shared in chat. Treat that PostgreSQL password as exposed and rotate it in Neon promptly, then update authorized consumers without sharing secret values. This is separate from `NEON_API_KEY`.
+- No production data migration or AWS provisioning was performed.
+
+### Jest/build CI confirmation — 2026-10-31
+
+- Workflow run `41242953327` (Dashboard build validation) completed successfully for both Node.js 22.x and 24.x.
+- Both matrix jobs passed locked dependency installation (`npm ci`), automated tests (`npm test -- --runInBand`), and Next.js production build.
+- Workflow run `41242953309` (AWS container validation) also completed successfully.
+- These checks validate the tested commit in CI only; they do not certify production auth, database migration, or AWS deployment.
+
+### Dependency audit pipeline added — 2026-10-31
+
+- Updated `.github/workflows/webpack.yml` in commit `54b790bd45f0b3688d6fcf73c6fb615583cc02fa` to run `npm audit --json` against the lockfile-installed dependency tree and upload the JSON report as a short-retention artifact for each Node matrix job.
+- The audit is diagnostic-only at this stage and will not fail the build merely because advisories exist. Review the severity summary and package paths before making targeted upgrades; do not run `npm audit fix --force` without compatibility review.
+- The first audit result for this change is pending CI execution and must be recorded after the workflow finishes.
