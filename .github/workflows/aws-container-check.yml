@@ -1,0 +1,50 @@
+name: AWS container validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.js"
+      - "app/**"
+      - "pages/**"
+      - "src/**"
+      - "lib/**"
+      - ".github/workflows/aws-container-check.yml"
+  push:
+    branches: ["aws-migration/**"]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.js"
+      - "app/**"
+      - "pages/**"
+      - "src/**"
+      - "lib/**"
+      - ".github/workflows/aws-container-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build dashboard image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: society-exe-dashboard:validation
