@@ -17,7 +17,7 @@
     "@aws-sdk/client-sesv2": "^3.1152.0",
     "@neondatabase/serverless": "^1.2.0",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/oidc-aws-credentials-provider": "^3.3.13",
+    "@vercel/oidc-aws-credentials-provider": "^3.3.17",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "botid": "^1.5.11",
@@ -45,5 +45,10 @@
     "postcss": "^8.5.8",
     "postcss-cli": "^11.0.1",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "4.6.7"
+    }
   }
 }
