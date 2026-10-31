@@ -34,6 +34,37 @@ jobs:
       - name: Run automated tests
         run: npm test -- --runInBand
 
+      - name: Audit locked dependencies (diagnostic)
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit.json
+          audit_exit=$?
+          set -e
+          node <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+          const v = report.metadata?.vulnerabilities ?? {};
+          console.log('npm audit severity summary:', JSON.stringify({
+            info: v.info ?? 0,
+            low: v.low ?? 0,
+            moderate: v.moderate ?? 0,
+            high: v.high ?? 0,
+            critical: v.critical ?? 0,
+            total: v.total ?? 0
+          }));
+          if (report.error) console.log('npm audit error:', report.error.code || report.error.summary || 'see artifact');
+          NODE
+          echo "npm audit exit code: $audit_exit (diagnostic only; inspect artifact before remediation)"
+      - name: Upload dependency audit report
+        if: always() && hashFiles('npm-audit.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-node-${{ matrix.node-version }}
+          path: npm-audit.json
+          retention-days: 7
+
+
       - name: Ensure Next.js public directory exists
         run: mkdir -p public
 
