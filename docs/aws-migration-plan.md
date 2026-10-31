@@ -90,11 +90,11 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 ### Runtime smoke test added
 - Workflow updated in commit `f5e8a44279bbcf60214f17ea47983d713d8e17f0`.
 - It now loads the built image into the CI runner, starts the container with a synthetic JWT secret, requests `http://127.0.0.1:3000/`, checks that the returned HTML contains `Society`, and stops the test container.
-- The new run is GitHub Actions run ID `41242092318`, run number 6. At the time of this update, its status is `in_progress`; the image build step is still running and the runtime steps are pending. No success/failure conclusion is available yet.
+- The new run is GitHub Actions run ID `41242092318`, run number 6. On the latest job inspection, the image build, container startup, HTTP request/assertion, and stop-container steps all completed successfully. GitHub was still running post-job cleanup (`in_progress`), so the overall run conclusion had not yet been published at that inspection. The functional smoke-test steps passed; await the final overall run conclusion before treating the workflow as fully complete.
 - This smoke test uses no production secrets and does not publish an image or provision AWS infrastructure.
 
 ### Outstanding validation and safety gates
-1. Obtain the final conclusion and logs for run `41242092318`; if it fails, fix the cause and rerun.
+1. Obtain the final overall conclusion for run `41242092318`; the image build and HTTP smoke-test steps are already green. If the final run fails during cleanup, inspect logs and distinguish cleanup failure from application smoke-test behavior.
 2. Run automated tests separately; the current workflow does not run Jest or test authentication/RBAC.
 3. Add a health endpoint only if it matches the application's actual runtime needs; do not invent a database-backed health check before a non-production database exists.
 4. Validate authentication, role authorization, OAuth callbacks, OTP/email, and database connectivity in an isolated staging environment with test credentials.
