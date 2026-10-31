@@ -96,14 +96,14 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 - This smoke test uses no production secrets and does not publish an image or provision AWS infrastructure.
 
 ### Outstanding validation and safety gates
-1. Add and run focused Jest tests; repository discovery did not find existing `**/__tests__/**/*.test.js` files, and the container workflow does not run Jest yet.
+1. Existing Jest suites were found under `__tests__/` (including admin login/password-reset and OAuth helper tests). Added `npm test -- --runInBand` to `Dashboard build validation` in commit `7ee741e8228486ac80a2dfea601dba4b057911eb`; verify the new CI run and triage any failures.
 2. Add a health endpoint only if it matches the application's actual runtime needs; do not invent a database-backed health check before a non-production database exists.
 3. Validate authentication, role authorization, OAuth callbacks, OTP/email, and database connectivity in an isolated staging environment with test credentials.
 4. Verify AWS credit eligibility and service cost before provisioning any paid resources.
 5. Keep Vercel, Neon, production secrets, DNS, and production traffic unchanged until acceptance tests and rollback are verified.
 
 ### Failure investigation and corrective action
-- `NodeJS with Webpack` run `41241461420` failed because the workflow ran `npm install` followed by `npx webpack`, but the repository does not declare `webpack-cli`; `npx` prompted to install it interactively and the non-interactive job exited with code 1. This workflow did not match the application's Next.js build system. Replaced it in commit `9ed71c006f18bf92e4e1118f5d23475a148560ee` with `Dashboard build validation`, which uses `npm ci` and `npm run build` on Node 22.x and 24.x. The replacement workflow's resulting run still needs its final conclusion checked.
+- `NodeJS with Webpack` run `41241461420` failed because the workflow ran `npm install` followed by `npx webpack`, but the repository does not declare `webpack-cli`; `npx` prompted to install it interactively and the non-interactive job exited with code 1. This workflow did not match the application's Next.js build system. Replaced it in commit `9ed71c006f18bf92e4e1118f5d23475a148560ee` with `Dashboard build validation`, which uses `npm ci` and `npm run build` on Node 22.x and 24.x. Both matrix jobs passed in run `41242658125` (Node 22.x and 24.x). Commit `7ee741e8228486ac80a2dfea601dba4b057911eb` adds the Jest suite to this workflow; its run result remains to be checked.
 - `Create/Delete Branch for Pull Request` run `41241461434` failed at `neondatabase/create-branch-action@v6` with HTTP 401 while attempting to create preview branch `preview/pr-5-aws-migration/bootstrap-plan` in Neon project `muddy-star-75887710`. Most likely cause: `NEON_API_KEY` repository secret is invalid, expired, revoked, or lacks the required access. Do not print or rotate it blindly; an authorized repo/Neon owner must validate and replace the secret securely, then rerun the workflow. The failed create call did not report creating the branch.
 - The `npm install` step in the legacy workflow reported 23 dependency vulnerabilities (3 low, 16 moderate, 4 high). This is a preliminary CI audit summary, not a verified current `npm audit` result from the locked install. Run a lockfile-based audit and triage exact package paths before remediation; do not apply `npm audit fix --force` blindly.
 - The workflow failures are distinct from the successful AWS container validation run `41242092318`.
@@ -122,3 +122,12 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 - Workflow behavior changed from invoking unrelated Webpack CLI to testing the actual Next.js production build on Node 22 and 24, with locked dependency installation (`npm ci`).
 - Outstanding human/security dependency: validate `NEON_API_KEY` securely in repository settings and Neon; do not disclose its value in issues, chat, logs, or source.
 - No production infrastructure, database branches, DNS, secrets, or production traffic were intentionally changed as part of this investigation.
+
+
+### CI confirmation update — 2026-10-31
+
+- Run `41242658125` (`Dashboard build validation`) completed successfully on both Node.js 22.x and 24.x; `npm ci`, Next.js build, and job cleanup passed on both matrix jobs.
+- Run `41242658122` (`AWS container validation`) completed successfully: Docker image build, container start, HTTP smoke test, container stop, and cleanup all passed.
+- Run `41242658145` (`Create/Delete Branch for Pull Request`) failed in the Neon branch-creation step; Setup passed and deletion was skipped. Neon API credentials/access remain an owner action. Do not echo or expose `NEON_API_KEY`.
+- Added Jest execution (`npm test -- --runInBand`) to the build-validation workflow in commit `7ee741e8228486ac80a2dfea601dba4b057911eb`. The run for this commit has not yet been confirmed in the available Actions result feed.
+- Test files do exist under `__tests__/`, including admin login/password-reset and OAuth helper tests. This corrects the earlier statement that no Jest test files were found.
