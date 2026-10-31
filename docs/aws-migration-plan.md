@@ -1,5 +1,7 @@
 # AWS Migration Plan — Society . E X E
 
+**Project leadership:** Ahiezer Rada — Owner / Chief Technology Officer (CTO).
+
 Status: planning baseline; no production resources created by this document.
 
 ## Budget constraint
@@ -90,12 +92,11 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 ### Runtime smoke test added
 - Workflow updated in commit `f5e8a44279bbcf60214f17ea47983d713d8e17f0`.
 - It now loads the built image into the CI runner, starts the container with a synthetic JWT secret, requests `http://127.0.0.1:3000/`, checks that the returned HTML contains `Society`, and stops the test container.
-- The new run is GitHub Actions run ID `41242092318`, run number 6. On the latest job inspection, the image build, container startup, HTTP request/assertion, and stop-container steps all completed successfully. GitHub was still running post-job cleanup (`in_progress`), so the overall run conclusion had not yet been published at that inspection. The functional smoke-test steps passed; await the final overall run conclusion before treating the workflow as fully complete.
+- The new run is GitHub Actions run ID `41242092318`, run number 6. Final GitHub Actions inspection confirms run `41242092318` completed with conclusion `success`. All steps passed: image build, container startup, HTTP response/assertion, container stop, post-build cleanup, and job completion.
 - This smoke test uses no production secrets and does not publish an image or provision AWS infrastructure.
 
 ### Outstanding validation and safety gates
-1. Obtain the final overall conclusion for run `41242092318`; the image build and HTTP smoke-test steps are already green. If the final run fails during cleanup, inspect logs and distinguish cleanup failure from application smoke-test behavior.
-2. Run automated tests separately; the current workflow does not run Jest or test authentication/RBAC.
+1. Run automated tests separately; the current workflow does not run Jest or test authentication/RBAC.
 3. Add a health endpoint only if it matches the application's actual runtime needs; do not invent a database-backed health check before a non-production database exists.
 4. Validate authentication, role authorization, OAuth callbacks, OTP/email, and database connectivity in an isolated staging environment with test credentials.
 5. Verify AWS credit eligibility and service cost before provisioning any paid resources.
@@ -103,3 +104,10 @@ Both preparation and implementation/cutover are included in the same USD 120 cre
 
 ### Other workflow results
 Two other workflows associated with commit `ffb2587ad388a0408a647c656e24eea49fef5ad0` were reported as failed: `Create/Delete Branch for Pull Request` and `NodeJS with Webpack`. Their failures have not yet been diagnosed, and must not be assumed to be caused by the Docker change without their job logs.
+
+
+### Leadership and CI status correction — 2026-10-31
+
+- Document owner / CTO: **Ahiezer Rada — Owner / Chief Technology Officer (CTO)**.
+- Final status for GitHub Actions run `41242092318`: **success**. The complete job, including post-job cleanup, passed. This supersedes the earlier note that cleanup was still in progress.
+- Documentation update commit for this correction is recorded in Git history; no AWS resources, production secrets, DNS, or production traffic were changed.
