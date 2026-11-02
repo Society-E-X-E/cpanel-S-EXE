@@ -10,7 +10,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "db:migrate:sqlite": "node scripts/migrate-sqlite-to-postgres.cjs",
-    "ses:template": "node scripts/sync-ses-email-template.mjs"
+    "ses:template": "node scripts/sync-ses-email-template.mjs",
+    "postinstall": "node scripts/apply-dev-patches.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.1152.0",
@@ -41,7 +42,8 @@
     "autoprefixer": "^10.4.27",
     "babel-jest": "^30.4.1",
     "better-sqlite3": "^12.8.0",
-    "jest": "^30.4.2",
+    "jest": "^30.5.2",
+    "patch-package": "^8.0.1",
     "postcss": "^8.5.8",
     "postcss-cli": "^11.0.1",
     "typescript": "^5.9.3"
@@ -49,6 +51,8 @@
   "overrides": {
     "@vercel/cli-config": {
       "zod": "4.6.7"
-    }
+    },
+    "glob": "14.0.3",
+    "minimatch": "11.0.3"
   }
 }
