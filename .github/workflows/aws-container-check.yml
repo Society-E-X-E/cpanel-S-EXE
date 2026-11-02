@@ -1,0 +1,80 @@
+name: AWS container validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.js"
+      - "app/**"
+      - "pages/**"
+      - "src/**"
+      - "lib/**"
+      - ".github/workflows/aws-container-check.yml"
+  push:
+    branches: ["aws-migration/**"]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.js"
+      - "app/**"
+      - "pages/**"
+      - "src/**"
+      - "lib/**"
+      - ".github/workflows/aws-container-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build dashboard image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: society-exe-dashboard:validation
+
+      - name: Start container with non-production smoke-test settings
+        env:
+          JWT_SECRET: ci-smoke-test-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+        run: |
+          docker run --detach --rm \
+            --name society-exe-dashboard-smoke \
+            --publish 127.0.0.1:3000:3000 \
+            --env NODE_ENV=production \
+            --env JWT_SECRET="$JWT_SECRET" \
+            society-exe-dashboard:validation
+
+      - name: Verify dashboard HTTP response
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/ -o /tmp/dashboard-home.html; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs society-exe-dashboard-smoke
+              exit 1
+            fi
+            sleep 2
+          done
+          grep -q "Society" /tmp/dashboard-home.html
+
+      - name: Stop smoke-test container
+        if: always()
+        run: docker stop society-exe-dashboard-smoke || true
