@@ -1,6 +1,7 @@
 FROM node:24-alpine AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY scripts/apply-dev-patches.cjs ./scripts/apply-dev-patches.cjs
 RUN npm ci
 
 FROM node:24-alpine AS builder
